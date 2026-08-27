@@ -19,3 +19,20 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
+
+/// Customer profiles are agent-managed. `notes` is free text (SQLite maps
+/// String to TEXT; `@db.Text` is a no-op here and must not be used).
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String
+  company   String?
+  notes     String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // TODO(Story 03): add `tickets Ticket[]` here together with the `Ticket`
+  // model and its `customer Customer @relation(fields: [customerId], ...)`
+  // back-reference. Both sides must land in the same migration.
+}

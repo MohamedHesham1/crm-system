@@ -30,9 +30,42 @@ async function main() {
     },
   })
 
+  const CUSTOMERS = [
+    {
+      name: "Nadia Rahman",
+      email: "nadia@northwind.example",
+      phone: "+1 555 0142",
+      company: "Northwind Traders",
+      notes: "Prefers email over phone. Renewal due in Q3.",
+    },
+    {
+      name: "Tom Okafor",
+      email: "tom@lakeside.example",
+      phone: "+1 555 0188",
+      company: null,
+      notes: "",
+    },
+    {
+      name: "Priya Venkat",
+      email: "priya@helio.example",
+      phone: "+1 555 0201",
+      company: "Helio Labs",
+      notes: "Escalated billing issue in March; resolved.",
+    },
+  ]
+
+  for (const customer of CUSTOMERS) {
+    await prisma.customer.upsert({
+      where: { email: customer.email },
+      update: customer,
+      create: customer,
+    })
+  }
+
   console.log("Seeded users:")
   console.log(`  agent@crm.local    / ${SEED_PASSWORD}  (AGENT)`)
   console.log(`  customer@crm.local / ${SEED_PASSWORD}  (CUSTOMER)`)
+  console.log(`Seeded ${CUSTOMERS.length} customers.`)
 }
 
 main()
