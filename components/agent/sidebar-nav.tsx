@@ -8,6 +8,7 @@ import type { Role } from "@/lib/roles"
 
 const BASE_LINKS = [
   { href: "/agent", label: "Dashboard" },
+  { href: "/agent/tickets", label: "Tickets" },
   { href: "/agent/customers", label: "Customers" },
 ] as const
 

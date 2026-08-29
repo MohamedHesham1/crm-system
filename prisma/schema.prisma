@@ -22,6 +22,11 @@ model User {
   /// Set when this login was created through `/register`, or linked to an
   /// agent-created profile at registration time. Staff logins have none.
   customer     Customer?
+
+  /// Tickets this staff member currently owns. Empty for CUSTOMER logins —
+  /// a customer sits on the `Ticket.customer` side, never this one.
+  assignedTickets Ticket[]
+  comments        Comment[]
 }
 
 /// Customer profiles are agent-managed. `notes` is free text (SQLite maps
@@ -43,7 +48,65 @@ model Customer {
   userId    String?  @unique
   user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  // TODO(Story 03): add `tickets Ticket[]` here together with the `Ticket`
-  // model and its `customer Customer @relation(fields: [customerId], ...)`
-  // back-reference. Both sides must land in the same migration.
+  tickets   Ticket[]
+}
+
+/// Support tickets. `priority` and `status` are Strings, not Prisma enums —
+/// SQLite has no `enum` support, exactly as with `User.role` (see line 10).
+/// The allowed values live in `lib/validation/ticket.ts` and nowhere else.
+model Ticket {
+  id              String    @id @default(cuid())
+  subject         String
+  description     String
+  /// Free text chosen by the reporter. Deliberately not constrained to a
+  /// fixed list — auto-categorisation is explicitly out of scope.
+  category        String
+  /// "LOW" | "MEDIUM" | "HIGH"
+  priority        String
+  /// "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED"
+  status          String    @default("OPEN")
+
+  customerId      String
+  customer        Customer  @relation(fields: [customerId], references: [id], onDelete: Restrict)
+
+  /// **NULL means unassigned** — the queue state every ticket starts in.
+  /// Not a data gap. `onDelete: SetNull` so removing a staff account returns
+  /// their tickets to the queue instead of deleting history.
+  assignedAgentId String?
+  assignedAgent   User?     @relation(fields: [assignedAgentId], references: [id], onDelete: SetNull)
+
+  /// SLA deadline. Nullable: a ticket with no `dueAt` can never breach and is
+  /// never picked up by the assignment sweep. Defaulted from `priority` at
+  /// creation time by `lib/sla.ts`, not by the database.
+  dueAt           DateTime?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  comments        Comment[]
+
+  @@index([status])
+  @@index([assignedAgentId])
+  @@index([customerId])
+}
+
+/// One message on a ticket thread. Agents and customers both write here;
+/// `author.role` is what the UI uses to tell them apart.
+model Comment {
+  id        String   @id @default(cuid())
+
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  authorId  String
+  /// `Restrict`: an account with comments cannot be deleted out from under the
+  /// thread. There is no delete-user endpoint yet (Story 03 shipped create +
+  /// list only), so this is a guarantee waiting for a caller.
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Restrict)
+
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ticketId, createdAt])
 }

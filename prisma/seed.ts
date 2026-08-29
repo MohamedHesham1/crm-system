@@ -1,6 +1,8 @@
 import { PrismaClient } from "@prisma/client"
 import bcrypt from "bcryptjs"
 
+import { defaultDueAt } from "@/lib/sla"
+
 const prisma = new PrismaClient()
 
 const SEED_PASSWORD = "Passw0rd!"
@@ -87,11 +89,39 @@ async function main() {
     })
   }
 
+  const linkedCustomer = await prisma.customer.findUnique({
+    where: { email: "customer@crm.local" },
+    select: { id: true },
+  })
+
+  const SEED_TICKET_SUBJECT = "Cannot export monthly invoice PDF"
+  if (linkedCustomer) {
+    const existingTicket = await prisma.ticket.findFirst({
+      where: { customerId: linkedCustomer.id, subject: SEED_TICKET_SUBJECT },
+      select: { id: true },
+    })
+    if (!existingTicket) {
+      await prisma.ticket.create({
+        data: {
+          subject: SEED_TICKET_SUBJECT,
+          description: "The monthly invoice PDF export button spins forever and never downloads.",
+          category: "Billing",
+          priority: "MEDIUM",
+          status: "OPEN",
+          customerId: linkedCustomer.id,
+          assignedAgentId: null,
+          dueAt: defaultDueAt("MEDIUM"),
+        },
+      })
+    }
+  }
+
   console.log("Seeded users:")
   console.log(`  agent@crm.local    / ${SEED_PASSWORD}  (AGENT)`)
   console.log(`  customer@crm.local / ${SEED_PASSWORD}  (CUSTOMER)`)
   console.log(`  admin@crm.local    / ${SEED_PASSWORD}  (ADMIN)`)
   console.log(`Seeded ${CUSTOMERS.length} customers (unlinked) + 1 linked to customer@crm.local.`)
+  console.log("Seeded 1 ticket (unassigned) for customer@crm.local.")
 }
 
 main()

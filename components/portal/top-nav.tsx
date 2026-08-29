@@ -9,6 +9,9 @@ export function TopNav({ email }: { email: string }) {
         CRM Portal
       </Link>
       <div className="flex items-center gap-4">
+        <Link href="/portal/tickets" className="text-sm text-muted-foreground hover:text-foreground">
+          My tickets
+        </Link>
         <span className="text-sm text-muted-foreground">{email}</span>
         <SignOutButton />
       </div>
