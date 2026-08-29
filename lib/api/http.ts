@@ -1,16 +1,25 @@
 import { z, type ZodError } from "zod"
 
 import { auth } from "@/auth"
+import { isStaff } from "@/lib/roles"
 
 /**
  * `middleware.ts` excludes `/api/**` (see its matcher at line 37), so every
  * route handler must guard itself. Returns a `Response` to send back, or
- * `null` when the caller is an authenticated AGENT.
+ * `null` when the caller is authenticated staff (AGENT or ADMIN).
  */
 export async function requireAgent(): Promise<Response | null> {
   const session = await auth()
   if (!session?.user) return Response.json({ error: "Unauthorized" }, { status: 401 })
-  if (session.user.role !== "AGENT") return Response.json({ error: "Forbidden" }, { status: 403 })
+  if (!isStaff(session.user.role)) return Response.json({ error: "Forbidden" }, { status: 403 })
+  return null
+}
+
+/** Same shape as `requireAgent`, narrowed to ADMIN. Guards `/api/admin/**`. */
+export async function requireAdmin(): Promise<Response | null> {
+  const session = await auth()
+  if (!session?.user) return Response.json({ error: "Unauthorized" }, { status: 401 })
+  if (session.user.role !== "ADMIN") return Response.json({ error: "Forbidden" }, { status: 403 })
   return null
 }
 

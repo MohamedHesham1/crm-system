@@ -1,4 +1,8 @@
 import type { CreateCustomerInput, UpdateCustomerInput } from "@/lib/validation/customer"
+import { request } from "@/lib/api/client"
+
+export { ApiError } from "@/lib/api/client"
+export type { FieldErrors } from "@/lib/api/client"
 
 export type CustomerListItem = {
   id: string
@@ -18,43 +22,10 @@ export type Customer = CustomerListItem & {
   updatedAt: string
 }
 
-export type FieldErrors = Record<string, string[] | undefined>
-
-export class ApiError extends Error {
-  readonly status: number
-  readonly fieldErrors: FieldErrors
-
-  constructor(message: string, status: number, fieldErrors: FieldErrors = {}) {
-    super(message)
-    this.name = "ApiError"
-    this.status = status
-    this.fieldErrors = fieldErrors
-  }
-}
-
 export const customerKeys = {
   all: ["customers"] as const,
   list: () => [...customerKeys.all, "list"] as const,
   detail: (id: string) => [...customerKeys.all, "detail", id] as const,
-}
-
-async function request<T>(input: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(input, {
-    ...init,
-    headers: init?.body ? { "Content-Type": "application/json", ...init?.headers } : init?.headers,
-  })
-
-  const payload = await response.json().catch(() => null)
-
-  if (!response.ok) {
-    throw new ApiError(
-      (payload as { error?: string } | null)?.error ?? "Request failed.",
-      response.status,
-      (payload as { fieldErrors?: FieldErrors } | null)?.fieldErrors ?? {},
-    )
-  }
-
-  return payload as T
 }
 
 export async function fetchCustomers(): Promise<CustomerListItem[]> {

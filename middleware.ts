@@ -2,7 +2,7 @@ import NextAuth from "next-auth"
 import { NextResponse } from "next/server"
 
 import { authConfig } from "@/auth.config"
-import { homeForRole } from "@/lib/roles"
+import { homeForRole, isStaff } from "@/lib/roles"
 
 const { auth } = NextAuth(authConfig)
 
@@ -27,7 +27,7 @@ export default auth((req) => {
   const home = homeForRole(user.role)
 
   if (isLogin) return NextResponse.redirect(new URL(home, nextUrl))
-  if (isAgentArea && user.role !== "AGENT") return NextResponse.redirect(new URL(home, nextUrl))
+  if (isAgentArea && !isStaff(user.role)) return NextResponse.redirect(new URL(home, nextUrl))
   if (isPortalArea && user.role !== "CUSTOMER") return NextResponse.redirect(new URL(home, nextUrl))
 
   return NextResponse.next()

@@ -4,18 +4,22 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 import { cn } from "@/lib/utils"
+import type { Role } from "@/lib/roles"
 
-const LINKS = [
+const BASE_LINKS = [
   { href: "/agent", label: "Dashboard" },
   { href: "/agent/customers", label: "Customers" },
 ] as const
 
-export function SidebarNav() {
+const ADMIN_LINKS = [{ href: "/agent/admin/users", label: "Admin" }] as const
+
+export function SidebarNav({ role }: { role: Role }) {
   const pathname = usePathname()
+  const links = role === "ADMIN" ? [...BASE_LINKS, ...ADMIN_LINKS] : BASE_LINKS
 
   return (
     <nav className="flex flex-col gap-1">
-      {LINKS.map((link) => {
+      {links.map((link) => {
         const isActive =
           link.href === "/agent" ? pathname === "/agent" : pathname.startsWith(link.href)
 

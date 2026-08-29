@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/// Application roles are "AGENT" | "CUSTOMER".
+/// Application roles are "AGENT" | "CUSTOMER" | "ADMIN".
 /// SQLite does not support Prisma `enum` blocks, so `role` is a String
 /// constrained in application code by `Role` in `lib/roles.ts`.
 model User {

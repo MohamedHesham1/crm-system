@@ -30,6 +30,17 @@ async function main() {
     },
   })
 
+  await prisma.user.upsert({
+    where: { email: "admin@crm.local" },
+    update: { name: "Adam Admin", passwordHash, role: "ADMIN" },
+    create: {
+      name: "Adam Admin",
+      email: "admin@crm.local",
+      passwordHash,
+      role: "ADMIN",
+    },
+  })
+
   const CUSTOMERS = [
     {
       name: "Nadia Rahman",
@@ -65,6 +76,7 @@ async function main() {
   console.log("Seeded users:")
   console.log(`  agent@crm.local    / ${SEED_PASSWORD}  (AGENT)`)
   console.log(`  customer@crm.local / ${SEED_PASSWORD}  (CUSTOMER)`)
+  console.log(`  admin@crm.local    / ${SEED_PASSWORD}  (ADMIN)`)
   console.log(`Seeded ${CUSTOMERS.length} customers.`)
 }
 
