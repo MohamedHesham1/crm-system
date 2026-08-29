@@ -19,7 +19,7 @@ async function main() {
     },
   })
 
-  await prisma.user.upsert({
+  const customerUser = await prisma.user.upsert({
     where: { email: "customer@crm.local" },
     update: { name: "Cody Customer", passwordHash, role: "CUSTOMER" },
     create: {
@@ -27,6 +27,20 @@ async function main() {
       email: "customer@crm.local",
       passwordHash,
       role: "CUSTOMER",
+    },
+  })
+
+  // The seeded portal login gets a real linked profile via `Customer.userId` —
+  // the same shape `registerCustomer` produces. No code path special-cases the
+  // seed, so anything that works here works for a real registration.
+  await prisma.customer.upsert({
+    where: { email: "customer@crm.local" },
+    update: { name: "Cody Customer", phone: "+1 555 0110", userId: customerUser.id },
+    create: {
+      name: "Cody Customer",
+      email: "customer@crm.local",
+      phone: "+1 555 0110",
+      userId: customerUser.id,
     },
   })
 
@@ -77,7 +91,7 @@ async function main() {
   console.log(`  agent@crm.local    / ${SEED_PASSWORD}  (AGENT)`)
   console.log(`  customer@crm.local / ${SEED_PASSWORD}  (CUSTOMER)`)
   console.log(`  admin@crm.local    / ${SEED_PASSWORD}  (ADMIN)`)
-  console.log(`Seeded ${CUSTOMERS.length} customers.`)
+  console.log(`Seeded ${CUSTOMERS.length} customers (unlinked) + 1 linked to customer@crm.local.`)
 }
 
 main()

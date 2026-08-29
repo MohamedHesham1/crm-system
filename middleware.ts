@@ -11,7 +11,7 @@ export default auth((req) => {
   const user = req.auth?.user
   const path = nextUrl.pathname
 
-  const isLogin = path === "/login"
+  const isAuthPage = path === "/login" || path === "/register"
   const isAgentArea = path === "/agent" || path.startsWith("/agent/")
   const isPortalArea = path === "/portal" || path.startsWith("/portal/")
 
@@ -26,7 +26,7 @@ export default auth((req) => {
 
   const home = homeForRole(user.role)
 
-  if (isLogin) return NextResponse.redirect(new URL(home, nextUrl))
+  if (isAuthPage) return NextResponse.redirect(new URL(home, nextUrl))
   if (isAgentArea && !isStaff(user.role)) return NextResponse.redirect(new URL(home, nextUrl))
   if (isPortalArea && user.role !== "CUSTOMER") return NextResponse.redirect(new URL(home, nextUrl))
 

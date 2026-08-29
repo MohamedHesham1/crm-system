@@ -18,6 +18,10 @@ model User {
   role         String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  /// Set when this login was created through `/register`, or linked to an
+  /// agent-created profile at registration time. Staff logins have none.
+  customer     Customer?
 }
 
 /// Customer profiles are agent-managed. `notes` is free text (SQLite maps
@@ -31,6 +35,13 @@ model Customer {
   notes     String   @default("")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  /// The portal login that owns this profile. **Nullable on purpose**: an
+  /// agent-created customer who never registered has no login, and that is a
+  /// permanent, valid state — not a migration gap. `@unique` makes the
+  /// relation one-to-one, so two logins can never claim the same profile.
+  userId    String?  @unique
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   // TODO(Story 03): add `tickets Ticket[]` here together with the `Ticket`
   // model and its `customer Customer @relation(fields: [customerId], ...)`

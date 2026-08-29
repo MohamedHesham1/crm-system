@@ -1,21 +1,21 @@
 import Link from "next/link"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { LoginForm } from "./login-form"
+import { RegisterForm } from "./register-form"
 
-export default function LoginPage() {
+export default function RegisterPage() {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle>Sign in</CardTitle>
-        <CardDescription>Use your CRM account to continue.</CardDescription>
+        <CardTitle>Create an account</CardTitle>
+        <CardDescription>Register for the customer portal.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <LoginForm />
+        <RegisterForm />
         <p className="text-sm text-muted-foreground">
-          New customer?{" "}
-          <Link href="/register" className="underline underline-offset-4">
-            Create an account
+          Already have an account?{" "}
+          <Link href="/login" className="underline underline-offset-4">
+            Sign in
           </Link>
         </p>
       </CardContent>

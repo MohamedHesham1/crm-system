@@ -1,15 +1,6 @@
 import { z } from "zod"
 
-/**
- * Trim and lowercase *before* the format check, matching `loginSchema` in
- * `lib/validation/auth.ts`. `Customer.email` is `@unique` and SQLite compares
- * text case-sensitively, so normalisation has to happen here, not in the route.
- */
-const emailField = z
-  .string()
-  .trim()
-  .toLowerCase()
-  .pipe(z.email("Enter a valid email address."))
+import { emailField } from "@/lib/validation/email"
 
 export const createCustomerSchema = z.object({
   name: z

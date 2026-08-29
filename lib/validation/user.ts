@@ -1,17 +1,7 @@
 import { z } from "zod"
 
 import { ROLES } from "@/lib/roles"
-
-/**
- * Same normalisation as `lib/validation/customer.ts`: trim and lowercase
- * *before* the format check, because `User.email` is `@unique` and SQLite
- * compares text case-sensitively.
- */
-const emailField = z
-  .string()
-  .trim()
-  .toLowerCase()
-  .pipe(z.email("Enter a valid email address."))
+import { emailField } from "@/lib/validation/email"
 
 /** Only staff accounts can be created here. CUSTOMER is deliberately excluded. */
 export const CREATABLE_ROLES = ROLES.filter((role) => role !== "CUSTOMER")
