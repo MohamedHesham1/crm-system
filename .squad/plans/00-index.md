@@ -9,3 +9,4 @@ One row per feature folder under `.squad/plans/`. `NN` continues as a global exe
 | admin | [`admin/00-overview.md`](admin/00-overview.md) | 03 |
 | registration | [`registration/00-overview.md`](registration/00-overview.md) | 04 |
 | tickets | [`tickets/00-overview.md`](tickets/00-overview.md) | 05 |
+| activity | [`activity/00-overview.md`](activity/00-overview.md) | 06 |

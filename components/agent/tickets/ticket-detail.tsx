@@ -84,6 +84,9 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
         </p>
         <p className="text-sm text-muted-foreground">Category: {data.category}</p>
         <p className="text-sm text-muted-foreground">
+          Assigned to: {data.assignedAgent ? data.assignedAgent.name : "Unassigned"}
+        </p>
+        <p className="text-sm text-muted-foreground">
           Created {new Date(data.createdAt).toLocaleString()}
         </p>
         <p className="text-sm text-muted-foreground">

@@ -1,11 +1,13 @@
 import { Prisma } from "@prisma/client"
 
+import { auth } from "@/auth"
+import { assignmentNotifications, describeTicketChanges, logActivity, notify } from "@/lib/activity"
 import { prisma } from "@/lib/prisma"
 import { notFound, readJson, requireAdmin, validationError } from "@/lib/api/http"
 import { isRole, isStaff } from "@/lib/roles"
 import { isSlaBreached } from "@/lib/sla"
 import { authorizeAssignmentChange, resolveViewer, ticketScopeWhere } from "@/lib/ticket-access"
-import { updateTicketSchema } from "@/lib/validation/ticket"
+import { updateTicketSchema, type TicketPriority, type TicketStatus } from "@/lib/validation/ticket"
 
 const TICKET_DETAIL_SELECT = {
   id: true,
@@ -68,9 +70,18 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/tickets/[i
 
   const current = await prisma.ticket.findUnique({
     where: { id },
-    select: { id: true, status: true, assignedAgentId: true },
+    select: {
+      id: true,
+      subject: true,
+      status: true,
+      priority: true,
+      assignedAgentId: true,
+      assignedAgent: { select: { name: true } },
+    },
   })
   if (!current) return notFound("Ticket not found.")
+
+  let nextAgentName: string | null = null
 
   if ("assignedAgentId" in parsed.data) {
     const next = parsed.data.assignedAgentId ?? null
@@ -78,13 +89,17 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/tickets/[i
     if (!decision.allowed) return Response.json({ error: decision.reason }, { status: 403 })
 
     if (next !== null) {
-      const target = await prisma.user.findUnique({ where: { id: next }, select: { role: true } })
+      const target = await prisma.user.findUnique({
+        where: { id: next },
+        select: { name: true, role: true },
+      })
       if (!target || !isRole(target.role) || !isStaff(target.role)) {
         return Response.json(
           { error: "Validation failed", fieldErrors: { assignedAgentId: ["Choose a staff account."] } },
           { status: 400 },
         )
       }
+      nextAgentName = target.name
     }
   }
 
@@ -105,12 +120,46 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/tickets/[i
     ...(dueAt === undefined ? {} : { dueAt: dueAt === null ? null : new Date(dueAt) }),
   }
 
+  const changes = describeTicketChanges(
+    {
+      status: current.status as TicketStatus,
+      priority: current.priority as TicketPriority,
+      assignedAgentId: current.assignedAgentId,
+    },
+    parsed.data,
+    { id: viewer.id, name: viewer.name },
+    { previous: current.assignedAgent?.name ?? null, next: nextAgentName },
+  )
+
+  const notifications =
+    "assignedAgentId" in parsed.data
+      ? assignmentNotifications(
+          { id: current.id, subject: current.subject },
+          current.assignedAgentId,
+          parsed.data.assignedAgentId ?? null,
+          viewer.name,
+        )
+      : []
+
   try {
-    const ticket = await prisma.ticket.update({
-      where: { id },
-      data,
-      select: TICKET_DETAIL_SELECT,
+    const ticket = await prisma.$transaction(async (tx) => {
+      const updated = await tx.ticket.update({ where: { id }, data, select: TICKET_DETAIL_SELECT })
+
+      await logActivity(
+        tx,
+        changes.map((change) => ({
+          entityType: "Ticket" as const,
+          entityId: id,
+          action: change.action,
+          actorId: viewer.id,
+          detail: change.detail,
+        })),
+      )
+      await notify(tx, viewer.id, notifications)
+
+      return updated
     })
+
     return Response.json({ ticket: { ...ticket, slaBreached: isSlaBreached(ticket) } })
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
@@ -126,8 +175,26 @@ export async function DELETE(_request: Request, ctx: RouteContext<"/api/tickets/
 
   const { id } = await ctx.params
 
+  const existing = await prisma.ticket.findUnique({ where: { id }, select: { subject: true } })
+  if (!existing) return notFound("Ticket not found.")
+
+  const session = await auth()
+  const actorId = session!.user.id
+  const actorName = session!.user.name ?? "Unknown user"
+
   try {
-    await prisma.ticket.delete({ where: { id } })
+    await prisma.$transaction(async (tx) => {
+      await tx.ticket.delete({ where: { id } })
+      await logActivity(tx, [
+        {
+          entityType: "Ticket",
+          entityId: id,
+          action: "TICKET_DELETED",
+          actorId,
+          detail: `Ticket "${existing.subject}" deleted by ${actorName}.`,
+        },
+      ])
+    })
     return Response.json({ ok: true })
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {

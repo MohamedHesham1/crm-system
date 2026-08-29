@@ -1,3 +1,4 @@
+import { notify } from "@/lib/activity"
 import { prisma } from "@/lib/prisma"
 import { notFound, readJson, validationError } from "@/lib/api/http"
 import { resolveViewer, ticketScopeWhere } from "@/lib/ticket-access"
@@ -17,11 +18,11 @@ async function loadScopedTicket(id: string) {
 
   const ticket = await prisma.ticket.findFirst({
     where: { id, ...ticketScopeWhere(resolved.viewer) },
-    select: { id: true },
+    select: { id: true, subject: true, assignedAgentId: true },
   })
   if (!ticket) return { ok: false as const, response: notFound("Ticket not found.") }
 
-  return { ok: true as const, viewer: resolved.viewer }
+  return { ok: true as const, viewer: resolved.viewer, ticket }
 }
 
 export async function GET(_request: Request, ctx: RouteContext<"/api/tickets/[id]/comments">) {
@@ -49,9 +50,28 @@ export async function POST(request: Request, ctx: RouteContext<"/api/tickets/[id
   const parsed = createCommentSchema.safeParse(body.data)
   if (!parsed.success) return validationError(parsed.error)
 
-  const comment = await prisma.comment.create({
-    data: { ticketId: id, authorId: scoped.viewer.id, body: parsed.data.body },
-    select: COMMENT_SELECT,
+  const comment = await prisma.$transaction(async (tx) => {
+    const created = await tx.comment.create({
+      data: { ticketId: id, authorId: scoped.viewer.id, body: parsed.data.body },
+      select: COMMENT_SELECT,
+    })
+
+    await notify(
+      tx,
+      scoped.viewer.id,
+      scoped.ticket.assignedAgentId === null
+        ? []
+        : [
+            {
+              userId: scoped.ticket.assignedAgentId,
+              type: "TICKET_COMMENTED",
+              message: `${scoped.viewer.name} commented on "${scoped.ticket.subject}".`,
+              relatedTicketId: id,
+            },
+          ],
+    )
+
+    return created
   })
 
   return Response.json({ comment }, { status: 201 })

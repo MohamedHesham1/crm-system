@@ -1,3 +1,4 @@
+import { logActivity } from "@/lib/activity"
 import { prisma } from "@/lib/prisma"
 import { notFound, readJson, validationError } from "@/lib/api/http"
 import { defaultDueAt, isSlaBreached } from "@/lib/sla"
@@ -107,18 +108,23 @@ export async function POST(request: Request) {
     dueAt = defaultDueAt(priority)
   }
 
-  const ticket = await prisma.ticket.create({
-    data: {
-      subject,
-      description,
-      category,
-      priority,
-      status: "OPEN",
-      customerId,
-      assignedAgentId,
-      dueAt,
-    },
-    select: TICKET_SELECT,
+  const ticket = await prisma.$transaction(async (tx) => {
+    const created = await tx.ticket.create({
+      data: { subject, description, category, priority, status: "OPEN", customerId, assignedAgentId, dueAt },
+      select: TICKET_SELECT,
+    })
+
+    await logActivity(tx, [
+      {
+        entityType: "Ticket",
+        entityId: created.id,
+        action: "TICKET_CREATED",
+        actorId: viewer.id,
+        detail: `Ticket created by ${viewer.name}${assignedAgentId === viewer.id ? " and claimed" : ""}.`,
+      },
+    ])
+
+    return created
   })
 
   return Response.json({ ticket: { ...ticket, slaBreached: isSlaBreached(ticket) } }, { status: 201 })

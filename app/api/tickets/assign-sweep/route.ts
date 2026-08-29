@@ -1,3 +1,5 @@
+import { auth } from "@/auth"
+import { logActivity, notify } from "@/lib/activity"
 import { prisma } from "@/lib/prisma"
 import { requireAdmin } from "@/lib/api/http"
 import { isSlaHalfElapsed } from "@/lib/sla"
@@ -53,15 +55,49 @@ export async function POST() {
     loadByAgent.set(best.id, bestLoad + 1)
   }
 
+  const session = await auth()
+  const actorId = session!.user.id
+  const actorName = session!.user.name ?? "Unknown user"
+
+  const subjects = new Map(
+    (
+      await prisma.ticket.findMany({
+        where: { id: { in: assignments.map((assignment) => assignment.ticketId) } },
+        select: { id: true, subject: true },
+      })
+    ).map((ticket) => [ticket.id, ticket.subject]),
+  )
+
   if (assignments.length > 0) {
-    await prisma.$transaction(
-      assignments.map((assignment) =>
-        prisma.ticket.update({
+    await prisma.$transaction(async (tx) => {
+      for (const assignment of assignments) {
+        await tx.ticket.update({
           where: { id: assignment.ticketId },
           data: { assignedAgentId: assignment.agentId },
-        }),
-      ),
-    )
+        })
+
+        const subject = subjects.get(assignment.ticketId) ?? assignment.ticketId
+
+        await logActivity(tx, [
+          {
+            entityType: "Ticket",
+            entityId: assignment.ticketId,
+            action: "ASSIGNED",
+            actorId,
+            detail: `Assigned to ${assignment.agentName} by the assignment sweep, run by ${actorName}.`,
+          },
+        ])
+
+        await notify(tx, actorId, [
+          {
+            userId: assignment.agentId,
+            type: "TICKET_ASSIGNED",
+            message: `The assignment sweep gave you "${subject}".`,
+            relatedTicketId: assignment.ticketId,
+          },
+        ])
+      }
+    })
   }
 
   return Response.json({ swept: assignments.length, assignments })

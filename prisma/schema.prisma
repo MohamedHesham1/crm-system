@@ -27,6 +27,8 @@ model User {
   /// a customer sits on the `Ticket.customer` side, never this one.
   assignedTickets Ticket[]
   comments        Comment[]
+  auditLogs       AuditLog[]
+  notifications   Notification[]
 }
 
 /// Customer profiles are agent-managed. `notes` is free text (SQLite maps
@@ -84,6 +86,7 @@ model Ticket {
   updatedAt       DateTime  @updatedAt
 
   comments        Comment[]
+  notifications   Notification[]
 
   @@index([status])
   @@index([assignedAgentId])
@@ -109,4 +112,54 @@ model Comment {
   updatedAt DateTime @updatedAt
 
   @@index([ticketId, createdAt])
+}
+
+/// Append-only trail of ticket mutations. Written by `logActivity()` in
+/// `lib/activity.ts`, always on the same transaction as the change it records.
+model AuditLog {
+  id         String   @id @default(cuid())
+  /// Currently always "Ticket". A String, not an enum, so a later story can
+  /// log Customer or User changes without a migration.
+  entityType String
+  /// **Deliberately not a foreign key.** `DELETE /api/tickets/[id]` exists
+  /// (`app/api/tickets/[id]/route.ts:123`), and the record that a ticket was
+  /// deleted is exactly the row an FK would cascade away. Read paths must
+  /// therefore treat `entityId` as possibly dangling.
+  entityId   String
+  /// One of `AUDIT_ACTIONS` in `lib/validation/notification.ts`.
+  action     String
+  actorId    String
+  /// `Restrict`, matching `Comment.author`: an account with history cannot be
+  /// deleted out from under it.
+  actor      User     @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  /// Human-readable, **immutable** summary written at the moment of the change.
+  /// It embeds the actor's name on purpose — the trail says what was true then,
+  /// not what a later rename made true.
+  detail     String
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId, createdAt])
+  @@index([createdAt])
+}
+
+/// One message for one staff recipient. Written by `notify()` in
+/// `lib/activity.ts`. Agent-facing only in this story — a CUSTOMER is never a
+/// recipient.
+model Notification {
+  id              String   @id @default(cuid())
+  userId          String
+  /// `Cascade`: notifications are per-recipient and worthless without them.
+  /// Contrast `AuditLog.actor`, which is `Restrict` because it is history.
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// One of `NOTIFICATION_TYPES` in `lib/validation/notification.ts`.
+  type            String
+  message         String
+  /// Nullable per the acceptance criteria. `Cascade`, matching `Comment.ticket`
+  /// — a notification pointing at a deleted ticket is a dead link.
+  relatedTicketId String?
+  relatedTicket   Ticket?  @relation(fields: [relatedTicketId], references: [id], onDelete: Cascade)
+  read            Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  @@index([userId, read, createdAt])
 }

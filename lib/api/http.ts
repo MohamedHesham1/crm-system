@@ -1,7 +1,7 @@
 import { z, type ZodError } from "zod"
 
 import { auth } from "@/auth"
-import { isStaff } from "@/lib/roles"
+import { isStaff, type Role } from "@/lib/roles"
 
 /**
  * `middleware.ts` excludes `/api/**` (see its matcher at line 37), so every
@@ -21,6 +21,22 @@ export async function requireAdmin(): Promise<Response | null> {
   if (!session?.user) return Response.json({ error: "Unauthorized" }, { status: 401 })
   if (session.user.role !== "ADMIN") return Response.json({ error: "Forbidden" }, { status: 403 })
   return null
+}
+
+/**
+ * Any authenticated caller, with the identity attached. Used by
+ * `/api/notifications/**`, which is scoped by `userId` rather than by role: a
+ * CUSTOMER hitting it gets an empty list, not a `403`. Same
+ * `{ ok } | { response }` shape as `readJson` and `resolveViewer`.
+ */
+export async function requireUser(): Promise<
+  { ok: true; user: { id: string; role: Role } } | { ok: false; response: Response }
+> {
+  const session = await auth()
+  if (!session?.user) {
+    return { ok: false, response: Response.json({ error: "Unauthorized" }, { status: 401 }) }
+  }
+  return { ok: true, user: { id: session.user.id, role: session.user.role } }
 }
 
 export function validationError<T>(error: ZodError<T>): Response {

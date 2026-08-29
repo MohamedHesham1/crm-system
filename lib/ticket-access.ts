@@ -4,16 +4,16 @@ import { isStaff, type Role } from "@/lib/roles"
 
 export type Viewer =
   /** AGENT or ADMIN. Sees every ticket; the customer scope never applies. */
-  | { kind: "staff"; id: string; role: Role }
+  | { kind: "staff"; id: string; name: string; role: Role }
   /** A CUSTOMER with a linked `Customer` row. Scoped to `customerId`. */
-  | { kind: "customer"; id: string; customerId: string }
+  | { kind: "customer"; id: string; name: string; customerId: string }
   /**
    * A CUSTOMER login with **no** `Customer` row. Should not happen after Story
    * 04, but an admin can create a login without ever linking a profile.
    * Handled defensively: an empty list, never a 500, and never a fallback to
    * matching on email.
    */
-  | { kind: "orphan"; id: string }
+  | { kind: "orphan"; id: string; name: string }
 
 /**
  * Resolves the caller once per request. Returns a `Response` to send back when
@@ -34,7 +34,13 @@ export async function resolveViewer(): Promise<
   }
 
   const { id, role } = session.user
-  if (isStaff(role)) return { ok: true, viewer: { kind: "staff", id, role } }
+  // `DefaultSession["user"]` types `name` as `string | null | undefined`
+  // (`types/next-auth.d.ts:9`), even though the credentials provider always
+  // returns one (`auth.ts:32`). Coalesce rather than assert — an audit `detail`
+  // reading "undefined" is worse than one reading "Unknown user".
+  const name = session.user.name ?? "Unknown user"
+
+  if (isStaff(role)) return { ok: true, viewer: { kind: "staff", id, name, role } }
 
   const customer = await prisma.customer.findUnique({
     where: { userId: id },
@@ -42,8 +48,8 @@ export async function resolveViewer(): Promise<
   })
 
   return customer
-    ? { ok: true, viewer: { kind: "customer", id, customerId: customer.id } }
-    : { ok: true, viewer: { kind: "orphan", id } }
+    ? { ok: true, viewer: { kind: "customer", id, name, customerId: customer.id } }
+    : { ok: true, viewer: { kind: "orphan", id, name } }
 }
 
 /**
