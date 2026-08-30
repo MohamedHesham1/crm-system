@@ -2,29 +2,8 @@ import { logActivity, notify } from "@/lib/activity"
 import { prisma } from "@/lib/prisma"
 import { notFound } from "@/lib/api/http"
 import { isSlaBreached } from "@/lib/sla"
+import { TICKET_DETAIL_SELECT } from "@/lib/ticket-select"
 import { resolveViewer } from "@/lib/ticket-access"
-
-const TICKET_DETAIL_SELECT = {
-  id: true,
-  subject: true,
-  description: true,
-  category: true,
-  priority: true,
-  status: true,
-  dueAt: true,
-  createdAt: true,
-  customer: { select: { id: true, name: true, email: true, company: true } },
-  assignedAgent: { select: { id: true, name: true, email: true } },
-  comments: {
-    orderBy: { createdAt: "asc" as const },
-    select: {
-      id: true,
-      body: true,
-      createdAt: true,
-      author: { select: { id: true, name: true, role: true } },
-    },
-  },
-} as const
 
 /** Takes no request body. Exists only so "reopen" is a distinct action, not a status value PATCH happens to accept. */
 export async function POST(_request: Request, ctx: RouteContext<"/api/tickets/[id]/reopen">) {
@@ -51,7 +30,7 @@ export async function POST(_request: Request, ctx: RouteContext<"/api/tickets/[i
   const ticket = await prisma.$transaction(async (tx) => {
     const updated = await tx.ticket.update({
       where: { id },
-      data: { status: "OPEN" },
+      data: { status: "OPEN", resolvedAt: null },
       select: TICKET_DETAIL_SELECT,
     })
 

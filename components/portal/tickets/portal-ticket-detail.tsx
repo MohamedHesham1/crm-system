@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query"
 
 import { Badge } from "@/components/ui/badge"
 import { CommentThread } from "@/components/agent/tickets/comment-thread"
+import { FeedbackForm } from "@/components/portal/tickets/feedback-form"
+import { TERMINAL_STATUSES } from "@/lib/sla"
 import { fetchTicket, ticketKeys } from "@/lib/tickets"
 
 export function PortalTicketDetail({ ticketId }: { ticketId: string }) {
@@ -36,6 +38,10 @@ export function PortalTicketDetail({ ticketId }: { ticketId: string }) {
         </p>
         <p className="whitespace-pre-wrap text-sm">{data.description}</p>
       </div>
+
+      {TERMINAL_STATUSES.includes(data.status) ? (
+        <FeedbackForm ticketId={ticketId} feedback={data.feedback} />
+      ) : null}
 
       <CommentThread ticketId={ticketId} />
     </div>

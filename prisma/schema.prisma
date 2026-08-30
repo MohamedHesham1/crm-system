@@ -82,15 +82,48 @@ model Ticket {
   /// creation time by `lib/sla.ts`, not by the database.
   dueAt           DateTime?
 
+  /// When the ticket first entered a terminal status. **Nullable and set once**:
+  /// `updatedAt` (line 86) cannot serve here, because it moves on every later
+  /// edit — a priority change on a closed ticket would silently restate when it
+  /// was resolved. Written only by `PATCH /api/tickets/[id]` on a transition
+  /// *into* `TERMINAL_STATUSES`, and cleared by the reopen action. There is no
+  /// other writer.
+  resolvedAt      DateTime?
+
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
   comments        Comment[]
   notifications   Notification[]
+  feedback        Feedback?
 
   @@index([status])
   @@index([assignedAgentId])
   @@index([customerId])
+  @@index([resolvedAt])
+}
+
+/// One post-resolution rating from the customer who owns the ticket.
+/// `ticketId` is `@unique`, which is what makes "one feedback per ticket" a
+/// database guarantee and not just a handler check — two concurrent submissions
+/// lose one to `P2002`, never to a duplicate row.
+model Feedback {
+  id        String   @id @default(cuid())
+
+  ticketId  String   @unique
+  /// `Cascade`, matching `Comment.ticket` (line 102): feedback on a deleted
+  /// ticket is orphaned data, not history. Contrast `AuditLog`, which
+  /// deliberately has no FK at all.
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  /// 1–5. An `Int`, bounded in application code by `createFeedbackSchema` in
+  /// `lib/validation/feedback.ts` — SQLite enforces no range, exactly as it
+  /// enforces no enum on `Ticket.status` (see line 10).
+  rating    Int
+  /// Optional per the acceptance criteria. An empty submitted comment is stored
+  /// as NULL, never as `""`.
+  comment   String?
+  createdAt DateTime @default(now())
 }
 
 /// One message on a ticket thread. Agents and customers both write here;

@@ -10,6 +10,7 @@ import { NotificationBell } from "@/components/agent/notification-bell"
 const BASE_LINKS = [
   { href: "/agent", label: "Dashboard" },
   { href: "/agent/tickets", label: "Tickets" },
+  { href: "/agent/reports", label: "Reports" },
   { href: "/agent/customers", label: "Customers" },
 ] as const
 

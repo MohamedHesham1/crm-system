@@ -1,4 +1,5 @@
 import { request } from "@/lib/api/client"
+import type { TicketFeedback } from "@/lib/feedback"
 import type { Role } from "@/lib/roles"
 import type {
   CreatePortalTicketInput,
@@ -42,6 +43,8 @@ export type TicketDetail = TicketListItem & {
   customer: { id: string; name: string; email: string; company: string | null }
   assignedAgent: { id: string; name: string; email: string } | null
   comments: TicketComment[]
+  /** `null` until the owning customer rates the ticket. On the shared detail payload, so agents see it too — it is not a portal-only field. */
+  feedback: TicketFeedback | null
 }
 
 export type TicketFilters = {

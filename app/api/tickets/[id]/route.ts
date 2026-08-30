@@ -5,31 +5,10 @@ import { assignmentNotifications, describeTicketChanges, logActivity, notify } f
 import { prisma } from "@/lib/prisma"
 import { notFound, readJson, requireAdmin, validationError } from "@/lib/api/http"
 import { isRole, isStaff } from "@/lib/roles"
-import { isSlaBreached } from "@/lib/sla"
+import { isSlaBreached, TERMINAL_STATUSES } from "@/lib/sla"
+import { TICKET_DETAIL_SELECT } from "@/lib/ticket-select"
 import { authorizeAssignmentChange, resolveViewer, ticketScopeWhere } from "@/lib/ticket-access"
 import { updateTicketSchema, type TicketPriority, type TicketStatus } from "@/lib/validation/ticket"
-
-const TICKET_DETAIL_SELECT = {
-  id: true,
-  subject: true,
-  description: true,
-  category: true,
-  priority: true,
-  status: true,
-  dueAt: true,
-  createdAt: true,
-  customer: { select: { id: true, name: true, email: true, company: true } },
-  assignedAgent: { select: { id: true, name: true, email: true } },
-  comments: {
-    orderBy: { createdAt: "asc" as const },
-    select: {
-      id: true,
-      body: true,
-      createdAt: true,
-      author: { select: { id: true, name: true, role: true } },
-    },
-  },
-} as const
 
 export async function GET(_request: Request, ctx: RouteContext<"/api/tickets/[id]">) {
   const resolved = await resolveViewer()
@@ -115,9 +94,21 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/tickets/[i
   }
 
   const { dueAt, ...rest } = parsed.data
+  const wasTerminal = TERMINAL_STATUSES.includes(current.status as TicketStatus)
+  const willBeTerminal =
+    parsed.data.status === undefined
+      ? wasTerminal
+      : TERMINAL_STATUSES.includes(parsed.data.status)
+
   const data = {
     ...rest,
     ...(dueAt === undefined ? {} : { dueAt: dueAt === null ? null : new Date(dueAt) }),
+    // Only the *transition* writes. RESOLVED -> CLOSED leaves the original
+    // moment alone (both are terminal), and a PATCH that touches only
+    // `priority` never rewrites it. A terminal -> non-terminal move cannot
+    // happen here for a CLOSED ticket (409 at line 106) but can for a RESOLVED
+    // one, and that clears the stamp.
+    ...(wasTerminal === willBeTerminal ? {} : { resolvedAt: willBeTerminal ? new Date() : null }),
   }
 
   const changes = describeTicketChanges(
