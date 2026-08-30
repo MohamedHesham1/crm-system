@@ -13,18 +13,18 @@ export function AgentPerformanceTable() {
     staleTime: 0,
   })
 
-  if (isPending) return <p className="text-sm text-muted-foreground">Loading agent performance…</p>
+  if (isPending) return <p className="text-meta text-muted-foreground">Loading agent performance…</p>
 
   if (isError) {
     return (
-      <p role="alert" className="text-sm text-destructive">
+      <p role="alert" className="text-meta text-destructive">
         {error instanceof Error ? error.message : "Could not load agent performance."}
       </p>
     )
   }
 
   if (data.length === 0) {
-    return <p className="text-sm text-muted-foreground">No tickets have been resolved yet.</p>
+    return <p className="text-meta text-muted-foreground">No tickets have been resolved yet.</p>
   }
 
   return (
@@ -41,11 +41,11 @@ export function AgentPerformanceTable() {
         {data.map((agent) => (
           <TableRow key={agent.agentId ?? "unassigned"}>
             <TableCell className="font-medium">{agent.name}</TableCell>
-            <TableCell>{agent.resolved}</TableCell>
-            <TableCell className="text-muted-foreground">
+            <TableCell className="tabular-nums">{agent.resolved}</TableCell>
+            <TableCell className="text-muted-foreground tabular-nums">
               {formatDuration(agent.averageResolutionMs)}
             </TableCell>
-            <TableCell className="text-muted-foreground">
+            <TableCell className="text-muted-foreground tabular-nums">
               {agent.measured === 0 ? "—" : `${agent.onTime}/${agent.measured}`}
             </TableCell>
           </TableRow>

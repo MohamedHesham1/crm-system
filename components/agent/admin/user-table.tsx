@@ -11,11 +11,11 @@ export function UserTable() {
     queryFn: fetchUsers,
   })
 
-  if (isPending) return <p className="text-sm text-muted-foreground">Loading accounts…</p>
+  if (isPending) return <p className="text-meta text-muted-foreground">Loading accounts…</p>
 
   if (isError) {
     return (
-      <p role="alert" className="text-sm text-destructive">
+      <p role="alert" className="text-meta text-destructive">
         {error instanceof Error ? error.message : "Could not load accounts."}
       </p>
     )

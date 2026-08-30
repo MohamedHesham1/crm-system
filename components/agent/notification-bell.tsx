@@ -54,7 +54,7 @@ export function NotificationBell() {
 
       <PopoverContent align="start" className="w-80 p-0">
         <div className="flex items-center justify-between border-b px-3 py-2">
-          <p className="text-sm font-medium">Notifications</p>
+          <p className="text-meta font-medium">Notifications</p>
           {unreadCount > 0 ? (
             <Button
               type="button"
@@ -74,13 +74,13 @@ export function NotificationBell() {
 
         <div className="max-h-80 overflow-y-auto">
           {notifications.length === 0 ? (
-            <p className="px-3 py-4 text-sm text-muted-foreground">Nothing new.</p>
+            <p className="px-3 py-4 text-meta text-muted-foreground">Nothing new.</p>
           ) : (
             notifications.map((item) => {
               const body = (
                 <div className={item.read ? "opacity-60" : undefined}>
-                  <p className="text-sm">{item.message}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-meta">{item.message}</p>
+                  <p className="text-label text-muted-foreground">
                     {new Date(item.createdAt).toLocaleString()}
                   </p>
                 </div>

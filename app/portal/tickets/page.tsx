@@ -7,7 +7,7 @@ export default function PortalTicketsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">My tickets</h1>
+        <h1 className="text-display">My tickets</h1>
         <Button asChild size="sm">
           <Link href="/portal/tickets/new">New ticket</Link>
         </Button>

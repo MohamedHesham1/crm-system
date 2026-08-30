@@ -7,7 +7,7 @@ export default function TicketsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Tickets</h1>
+        <h1 className="text-display">Tickets</h1>
         <Button asChild size="sm">
           <Link href="/agent/tickets/new">New ticket</Link>
         </Button>

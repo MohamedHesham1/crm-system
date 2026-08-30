@@ -76,7 +76,7 @@ export function CustomerForm() {
           aria-invalid={Boolean(fieldErrors.name)}
         />
         {fieldErrors.name ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-meta text-destructive">
             {fieldErrors.name[0]}
           </p>
         ) : null}
@@ -93,7 +93,7 @@ export function CustomerForm() {
           aria-invalid={Boolean(fieldErrors.email)}
         />
         {fieldErrors.email ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-meta text-destructive">
             {fieldErrors.email[0]}
           </p>
         ) : null}
@@ -109,7 +109,7 @@ export function CustomerForm() {
           aria-invalid={Boolean(fieldErrors.phone)}
         />
         {fieldErrors.phone ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-meta text-destructive">
             {fieldErrors.phone[0]}
           </p>
         ) : null}
@@ -125,7 +125,7 @@ export function CustomerForm() {
           aria-invalid={Boolean(fieldErrors.company)}
         />
         {fieldErrors.company ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-meta text-destructive">
             {fieldErrors.company[0]}
           </p>
         ) : null}
@@ -142,14 +142,14 @@ export function CustomerForm() {
           aria-invalid={Boolean(fieldErrors.notes)}
         />
         {fieldErrors.notes ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-meta text-destructive">
             {fieldErrors.notes[0]}
           </p>
         ) : null}
       </div>
 
       {formError ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-meta text-destructive">
           {formError}
         </p>
       ) : null}

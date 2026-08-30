@@ -70,7 +70,7 @@ export function UserForm() {
           aria-invalid={Boolean(fieldErrors.name)}
         />
         {fieldErrors.name ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-meta text-destructive">
             {fieldErrors.name[0]}
           </p>
         ) : null}
@@ -87,7 +87,7 @@ export function UserForm() {
           aria-invalid={Boolean(fieldErrors.email)}
         />
         {fieldErrors.email ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-meta text-destructive">
             {fieldErrors.email[0]}
           </p>
         ) : null}
@@ -105,7 +105,7 @@ export function UserForm() {
           aria-invalid={Boolean(fieldErrors.password)}
         />
         {fieldErrors.password ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-meta text-destructive">
             {fieldErrors.password[0]}
           </p>
         ) : null}
@@ -128,14 +128,14 @@ export function UserForm() {
           ))}
         </select>
         {fieldErrors.role ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-meta text-destructive">
             {fieldErrors.role[0]}
           </p>
         ) : null}
       </div>
 
       {formError ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-meta text-destructive">
           {formError}
         </p>
       ) : null}

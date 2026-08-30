@@ -12,7 +12,7 @@ export default function RegisterPage() {
       </CardHeader>
       <CardContent className="space-y-4">
         <RegisterForm />
-        <p className="text-sm text-muted-foreground">
+        <p className="text-meta text-muted-foreground">
           Already have an account?{" "}
           <Link href="/login" className="underline underline-offset-4">
             Sign in

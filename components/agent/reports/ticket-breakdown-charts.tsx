@@ -26,10 +26,19 @@ export function TicketBreakdownCharts({
         </CardHeader>
         <ResponsiveContainer width="100%" height={240}>
           <BarChart data={statusData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="label" />
-            <YAxis allowDecimals={false} />
-            <Tooltip />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+            <XAxis dataKey="label" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} />
+            <YAxis allowDecimals={false} stroke="var(--muted-foreground)" fontSize={12} tickLine={false} width={32} />
+            <Tooltip
+              cursor={{ fill: "var(--muted)" }}
+              contentStyle={{
+                background: "var(--popover)",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--radius)",
+                color: "var(--popover-foreground)",
+                fontSize: "0.8125rem",
+              }}
+            />
             <Bar dataKey="count" fill="var(--chart-1)" radius={4} />
           </BarChart>
         </ResponsiveContainer>
@@ -41,10 +50,19 @@ export function TicketBreakdownCharts({
         </CardHeader>
         <ResponsiveContainer width="100%" height={240}>
           <BarChart data={priorityData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="label" />
-            <YAxis allowDecimals={false} />
-            <Tooltip />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+            <XAxis dataKey="label" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} />
+            <YAxis allowDecimals={false} stroke="var(--muted-foreground)" fontSize={12} tickLine={false} width={32} />
+            <Tooltip
+              cursor={{ fill: "var(--muted)" }}
+              contentStyle={{
+                background: "var(--popover)",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--radius)",
+                color: "var(--popover-foreground)",
+                fontSize: "0.8125rem",
+              }}
+            />
             <Bar dataKey="count" fill="var(--chart-2)" radius={4} />
           </BarChart>
         </ResponsiveContainer>

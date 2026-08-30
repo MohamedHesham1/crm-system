@@ -1,8 +1,8 @@
 import Link from "next/link"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { SlaBadge } from "@/components/ui/sla-badge"
 import type { DashboardSummary } from "@/lib/dashboard"
 import { TICKET_STATUSES } from "@/lib/validation/ticket"
 
@@ -15,7 +15,7 @@ export function SummaryCards({ summary }: { summary: DashboardSummary }) {
             <CardDescription>{status}</CardDescription>
           </CardHeader>
           <CardContent>
-            <span className="text-2xl font-semibold">{summary.assigned.byStatus[status]}</span>
+            <span className="text-metric tabular-nums">{summary.assigned.byStatus[status]}</span>
           </CardContent>
         </Card>
       ))}
@@ -25,9 +25,9 @@ export function SummaryCards({ summary }: { summary: DashboardSummary }) {
           <CardTitle>Assigned to me</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center gap-2">
-          <span className="text-2xl font-semibold">{summary.assigned.total}</span>
+          <span className="text-metric tabular-nums">{summary.assigned.total}</span>
           {summary.assigned.breached > 0 ? (
-            <Badge variant="destructive">{summary.assigned.breached} breached</Badge>
+            <SlaBadge>{summary.assigned.breached} breached</SlaBadge>
           ) : null}
         </CardContent>
       </Card>
@@ -38,9 +38,9 @@ export function SummaryCards({ summary }: { summary: DashboardSummary }) {
           <CardDescription>Waiting to be claimed</CardDescription>
         </CardHeader>
         <CardContent className="flex items-center gap-2">
-          <span className="text-2xl font-semibold">{summary.queue.unassigned}</span>
+          <span className="text-metric tabular-nums">{summary.queue.unassigned}</span>
           {summary.queue.breached > 0 ? (
-            <Badge variant="destructive">{summary.queue.breached} breached</Badge>
+            <SlaBadge>{summary.queue.breached} breached</SlaBadge>
           ) : null}
           <Button asChild variant="outline" size="sm">
             <Link href="/agent/tickets">Open the queue</Link>

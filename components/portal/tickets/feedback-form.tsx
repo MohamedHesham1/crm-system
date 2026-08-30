@@ -38,7 +38,7 @@ export function FeedbackForm({
         </CardHeader>
         {feedback.comment ? (
           <CardContent>
-            <p className="whitespace-pre-wrap text-sm">{feedback.comment}</p>
+            <p className="whitespace-pre-wrap text-body">{feedback.comment}</p>
           </CardContent>
         ) : null}
       </Card>
@@ -65,7 +65,7 @@ export function FeedbackForm({
               onClick={() => setRating(value)}
               aria-pressed={rating === value}
               className={cn(
-                "flex size-8 items-center justify-center rounded-md border text-sm font-medium transition-colors",
+                "flex size-8 items-center justify-center rounded-md border text-meta font-medium transition-colors",
                 rating === value
                   ? "border-primary bg-primary text-primary-foreground"
                   : "border-input hover:bg-muted",
@@ -96,7 +96,7 @@ export function FeedbackForm({
         </Button>
 
         {mutation.isError ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-meta text-destructive">
             {mutation.error instanceof ApiError ? mutation.error.message : "Could not submit rating."}
           </p>
         ) : null}

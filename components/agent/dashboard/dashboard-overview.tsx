@@ -21,10 +21,10 @@ export function DashboardOverview() {
 
   return (
     <div className="space-y-6">
-      {isPending ? <p className="text-sm text-muted-foreground">Loading dashboard…</p> : null}
+      {isPending ? <p className="text-meta text-muted-foreground">Loading dashboard…</p> : null}
 
       {isError ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-meta text-destructive">
           {error instanceof Error ? error.message : "Could not load the dashboard."}
         </p>
       ) : null}
@@ -32,7 +32,7 @@ export function DashboardOverview() {
       {!isPending && !isError ? (
         <>
           <SummaryCards summary={data} />
-          <h2 className="text-lg font-medium">Assigned to me</h2>
+          <h2 className="text-title">Assigned to me</h2>
           <AssignedTicketList tickets={data.tickets} />
         </>
       ) : null}

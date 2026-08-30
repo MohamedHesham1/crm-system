@@ -35,7 +35,7 @@ export function RegisterForm() {
           aria-invalid={Boolean(fieldErrors.name)}
         />
         {fieldErrors.name ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-meta text-destructive">
             {fieldErrors.name[0]}
           </p>
         ) : null}
@@ -52,7 +52,7 @@ export function RegisterForm() {
           aria-invalid={Boolean(fieldErrors.email)}
         />
         {fieldErrors.email ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-meta text-destructive">
             {fieldErrors.email[0]}
           </p>
         ) : null}
@@ -69,14 +69,14 @@ export function RegisterForm() {
           aria-invalid={Boolean(fieldErrors.password)}
         />
         {fieldErrors.password ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-meta text-destructive">
             {fieldErrors.password[0]}
           </p>
         ) : null}
       </div>
 
       {state.error ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-meta text-destructive">
           {state.error}
         </p>
       ) : null}

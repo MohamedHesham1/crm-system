@@ -100,7 +100,7 @@ export function TicketForm() {
           aria-invalid={Boolean(fieldErrors.subject)}
         />
         {fieldErrors.subject ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-meta text-destructive">
             {fieldErrors.subject[0]}
           </p>
         ) : null}
@@ -117,7 +117,7 @@ export function TicketForm() {
           aria-invalid={Boolean(fieldErrors.description)}
         />
         {fieldErrors.description ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-meta text-destructive">
             {fieldErrors.description[0]}
           </p>
         ) : null}
@@ -133,7 +133,7 @@ export function TicketForm() {
           aria-invalid={Boolean(fieldErrors.category)}
         />
         {fieldErrors.category ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-meta text-destructive">
             {fieldErrors.category[0]}
           </p>
         ) : null}
@@ -161,7 +161,7 @@ export function TicketForm() {
       <div className="space-y-2">
         <Label htmlFor="customerId">Customer</Label>
         {noCustomers ? (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-meta text-muted-foreground">
             No customers yet.{" "}
             <Link href="/agent/customers/new" className="underline underline-offset-4">
               Create a customer first.
@@ -185,7 +185,7 @@ export function TicketForm() {
           </Select>
         )}
         {fieldErrors.customerId ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-meta text-destructive">
             {fieldErrors.customerId[0]}
           </p>
         ) : null}
@@ -202,7 +202,7 @@ export function TicketForm() {
           aria-invalid={Boolean(fieldErrors.dueAt)}
         />
         {fieldErrors.dueAt ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-meta text-destructive">
             {fieldErrors.dueAt[0]}
           </p>
         ) : null}
@@ -220,7 +220,7 @@ export function TicketForm() {
       </div>
 
       {formError ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-meta text-destructive">
           {formError}
         </p>
       ) : null}

@@ -16,10 +16,10 @@ export function SlaSummaryCards({
           <CardDescription>On-time resolution</CardDescription>
         </CardHeader>
         <CardContent className="space-y-1">
-          <span className="text-2xl font-semibold">
+          <span className="text-metric tabular-nums">
             {sla.onTimeRate === null ? "—" : `${Math.round(sla.onTimeRate * 100)}%`}
           </span>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-label uppercase text-muted-foreground">
             {sla.onTime} of {sla.measured} tickets with an SLA target
           </p>
         </CardContent>
@@ -30,8 +30,8 @@ export function SlaSummaryCards({
           <CardDescription>Average resolution time</CardDescription>
         </CardHeader>
         <CardContent className="space-y-1">
-          <span className="text-2xl font-semibold">{formatDuration(sla.averageResolutionMs)}</span>
-          <p className="text-xs text-muted-foreground">across {sla.resolved} resolved tickets</p>
+          <span className="text-metric tabular-nums">{formatDuration(sla.averageResolutionMs)}</span>
+          <p className="text-label uppercase text-muted-foreground">across {sla.resolved} resolved tickets</p>
         </CardContent>
       </Card>
 
@@ -40,8 +40,8 @@ export function SlaSummaryCards({
           <CardDescription>Resolved</CardDescription>
         </CardHeader>
         <CardContent className="space-y-1">
-          <span className="text-2xl font-semibold">{sla.resolved}</span>
-          <p className="text-xs text-muted-foreground">
+          <span className="text-metric tabular-nums">{sla.resolved}</span>
+          <p className="text-label uppercase text-muted-foreground">
             {terminalStatuses.join(" or ").toLowerCase()} tickets
           </p>
         </CardContent>

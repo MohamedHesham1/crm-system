@@ -28,11 +28,11 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
     },
   })
 
-  if (isPending) return <p className="text-sm text-muted-foreground">Loading customer…</p>
+  if (isPending) return <p className="text-meta text-muted-foreground">Loading customer…</p>
 
   if (isError) {
     return (
-      <p role="alert" className="text-sm text-destructive">
+      <p role="alert" className="text-meta text-destructive">
         {error instanceof Error ? error.message : "Could not load customer."}
       </p>
     )
@@ -43,16 +43,16 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
 
   return (
     <div className="max-w-xl space-y-6">
-      <Link href="/agent/customers" className="text-sm text-muted-foreground hover:underline">
+      <Link href="/agent/customers" className="text-meta text-muted-foreground hover:underline">
         ← All customers
       </Link>
 
       <div>
-        <h1 className="text-2xl font-semibold">{data.name}</h1>
-        <p className="text-sm text-muted-foreground">{data.email}</p>
-        <p className="text-sm text-muted-foreground">{data.phone}</p>
-        <p className="text-sm text-muted-foreground">{data.company ?? "—"}</p>
-        <p className="text-sm text-muted-foreground">
+        <h1 className="text-display">{data.name}</h1>
+        <p className="text-meta text-muted-foreground">{data.email}</p>
+        <p className="text-meta text-muted-foreground">{data.phone}</p>
+        <p className="text-meta text-muted-foreground">{data.company ?? "—"}</p>
+        <p className="text-meta text-muted-foreground">
           Added {new Date(data.createdAt).toLocaleDateString()}
         </p>
       </div>
@@ -87,10 +87,10 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
             </Button>
           </div>
           {mutation.isSuccess && !isDirty ? (
-            <p className="text-sm text-muted-foreground">Notes saved.</p>
+            <p className="text-meta text-muted-foreground">Notes saved.</p>
           ) : null}
           {mutation.isError ? (
-            <p role="alert" className="text-sm text-destructive">
+            <p role="alert" className="text-meta text-destructive">
               {mutation.error instanceof Error ? mutation.error.message : "Could not save notes."}
             </p>
           ) : null}

@@ -70,7 +70,7 @@ export function PortalTicketForm() {
           aria-invalid={Boolean(fieldErrors.subject)}
         />
         {fieldErrors.subject ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-meta text-destructive">
             {fieldErrors.subject[0]}
           </p>
         ) : null}
@@ -87,7 +87,7 @@ export function PortalTicketForm() {
           aria-invalid={Boolean(fieldErrors.description)}
         />
         {fieldErrors.description ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-meta text-destructive">
             {fieldErrors.description[0]}
           </p>
         ) : null}
@@ -103,7 +103,7 @@ export function PortalTicketForm() {
           aria-invalid={Boolean(fieldErrors.category)}
         />
         {fieldErrors.category ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-meta text-destructive">
             {fieldErrors.category[0]}
           </p>
         ) : null}
@@ -129,7 +129,7 @@ export function PortalTicketForm() {
       </div>
 
       {formError ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-meta text-destructive">
           {formError}
         </p>
       ) : null}

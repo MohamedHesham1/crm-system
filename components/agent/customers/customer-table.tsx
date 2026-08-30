@@ -12,18 +12,18 @@ export function CustomerTable() {
     queryFn: fetchCustomers,
   })
 
-  if (isPending) return <p className="text-sm text-muted-foreground">Loading customers…</p>
+  if (isPending) return <p className="text-meta text-muted-foreground">Loading customers…</p>
 
   if (isError) {
     return (
-      <p role="alert" className="text-sm text-destructive">
+      <p role="alert" className="text-meta text-destructive">
         {error instanceof Error ? error.message : "Could not load customers."}
       </p>
     )
   }
 
   if (data.length === 0) {
-    return <p className="text-sm text-muted-foreground">No customers yet. Create the first one.</p>
+    return <p className="text-meta text-muted-foreground">No customers yet. Create the first one.</p>
   }
 
   return (

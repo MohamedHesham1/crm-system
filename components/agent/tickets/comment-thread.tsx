@@ -47,12 +47,12 @@ export function CommentThread({ ticketId }: { ticketId: string }) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold">Comments</h2>
+      <h2 className="text-title">Comments</h2>
 
-      {isPending ? <p className="text-sm text-muted-foreground">Loading comments…</p> : null}
+      {isPending ? <p className="text-meta text-muted-foreground">Loading comments…</p> : null}
 
       {isError ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-meta text-destructive">
           {error instanceof Error ? error.message : "Could not load comments."}
         </p>
       ) : null}
@@ -60,16 +60,16 @@ export function CommentThread({ ticketId }: { ticketId: string }) {
       {!isPending && !isError ? (
         <div className="space-y-3">
           {data.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No comments yet.</p>
+            <p className="text-meta text-muted-foreground">No comments yet.</p>
           ) : (
             data.map((comment) => (
-              <div key={comment.id} className="rounded-lg border p-3 text-sm">
+              <div key={comment.id} className="rounded-lg border p-3 text-body">
                 <div className="mb-1 flex items-center gap-2">
                   <span className="font-medium">{comment.author.name}</span>
                   <Badge variant={comment.author.role === "CUSTOMER" ? "secondary" : "outline"}>
                     {comment.author.role === "CUSTOMER" ? "Customer" : "Agent"}
                   </Badge>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-label text-muted-foreground">
                     {new Date(comment.createdAt).toLocaleString()}
                   </span>
                 </div>
@@ -91,7 +91,7 @@ export function CommentThread({ ticketId }: { ticketId: string }) {
           {mutation.isPending ? "Posting…" : "Post comment"}
         </Button>
         {mutation.isError ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-meta text-destructive">
             {mutation.error instanceof ApiError ? mutation.error.message : "Could not post comment."}
           </p>
         ) : null}

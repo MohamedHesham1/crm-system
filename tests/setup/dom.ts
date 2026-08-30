@@ -24,3 +24,18 @@ if (!globalThis.ResizeObserver) {
     disconnect() {}
   } as unknown as typeof ResizeObserver
 }
+// `next-themes`' `enableSystem` calls `matchMedia` to read the OS preference.
+// jsdom implements none of it.
+if (!globalThis.matchMedia) {
+  globalThis.matchMedia = (media: string) =>
+    ({
+      matches: false,
+      media,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }) as unknown as MediaQueryList
+}

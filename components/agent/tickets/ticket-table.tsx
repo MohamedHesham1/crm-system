@@ -8,6 +8,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { SlaBadge } from "@/components/ui/sla-badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   ApiError,
@@ -118,7 +119,7 @@ export function TicketTable() {
         {session?.user.role === "ADMIN" ? (
           <div className="ml-auto flex items-center gap-2">
             {sweepMessage ? (
-              <p className="text-sm text-muted-foreground">{sweepMessage}</p>
+              <p className="text-meta text-muted-foreground">{sweepMessage}</p>
             ) : null}
             <Button
               type="button"
@@ -133,16 +134,16 @@ export function TicketTable() {
         ) : null}
       </div>
 
-      {isPending ? <p className="text-sm text-muted-foreground">Loading tickets…</p> : null}
+      {isPending ? <p className="text-meta text-muted-foreground">Loading tickets…</p> : null}
 
       {isError ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-meta text-destructive">
           {error instanceof Error ? error.message : "Could not load tickets."}
         </p>
       ) : null}
 
       {!isPending && !isError && data.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No tickets match these filters.</p>
+        <p className="text-meta text-muted-foreground">No tickets match these filters.</p>
       ) : null}
 
       {!isPending && !isError && data.length > 0 ? (
@@ -159,7 +160,7 @@ export function TicketTable() {
           </TableHeader>
           <TableBody>
             {data.map((ticket) => (
-              <TableRow key={ticket.id}>
+              <TableRow key={ticket.id} data-sla={ticket.slaBreached ? "breached" : undefined}>
                 <TableCell>
                   <Link
                     href={`/agent/tickets/${ticket.id}`}
@@ -196,7 +197,7 @@ export function TicketTable() {
                 <TableCell className="text-muted-foreground">
                   <div className="flex items-center gap-2">
                     {ticket.dueAt ? new Date(ticket.dueAt).toLocaleString() : "—"}
-                    {ticket.slaBreached ? <Badge variant="destructive">SLA breached</Badge> : null}
+                    {ticket.slaBreached ? <SlaBadge /> : null}
                   </div>
                 </TableCell>
               </TableRow>
@@ -206,7 +207,7 @@ export function TicketTable() {
       ) : null}
 
       {claimMutation.isError ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-meta text-destructive">
           {claimMutation.error instanceof ApiError
             ? claimMutation.error.message
             : "Could not claim ticket."}

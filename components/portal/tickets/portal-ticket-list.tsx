@@ -13,18 +13,18 @@ export function PortalTicketList() {
     queryFn: () => fetchTickets(),
   })
 
-  if (isPending) return <p className="text-sm text-muted-foreground">Loading tickets…</p>
+  if (isPending) return <p className="text-meta text-muted-foreground">Loading tickets…</p>
 
   if (isError) {
     return (
-      <p role="alert" className="text-sm text-destructive">
+      <p role="alert" className="text-meta text-destructive">
         {error instanceof Error ? error.message : "Could not load tickets."}
       </p>
     )
   }
 
   if (data.length === 0) {
-    return <p className="text-sm text-muted-foreground">You have no tickets yet.</p>
+    return <p className="text-meta text-muted-foreground">You have no tickets yet.</p>
   }
 
   return (

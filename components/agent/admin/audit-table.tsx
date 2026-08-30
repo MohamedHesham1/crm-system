@@ -47,16 +47,16 @@ export function AuditTable() {
         </SelectContent>
       </Select>
 
-      {isPending ? <p className="text-sm text-muted-foreground">Loading activity…</p> : null}
+      {isPending ? <p className="text-meta text-muted-foreground">Loading activity…</p> : null}
 
       {isError ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-meta text-destructive">
           {error instanceof Error ? error.message : "Could not load activity."}
         </p>
       ) : null}
 
       {!isPending && !isError && data.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No activity recorded yet.</p>
+        <p className="text-meta text-muted-foreground">No activity recorded yet.</p>
       ) : null}
 
       {!isPending && !isError && data.length > 0 ? (

@@ -41,7 +41,7 @@ export function LoginForm() {
       </div>
 
       {state.error ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-meta text-destructive">
           {state.error}
         </p>
       ) : null}

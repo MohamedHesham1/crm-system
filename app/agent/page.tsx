@@ -8,8 +8,8 @@ export default async function AgentDashboardPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold">Agent dashboard</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-display">Agent dashboard</h1>
+        <p className="text-meta text-muted-foreground">
           Signed in as {session?.user.name} ({session?.user.role}).
         </p>
       </div>

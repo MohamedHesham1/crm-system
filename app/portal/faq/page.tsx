@@ -12,8 +12,8 @@ export default function PortalFaqPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold">Frequently asked questions</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-display">Frequently asked questions</h1>
+        <p className="text-meta text-muted-foreground">
           Still stuck? Raise a ticket and an agent will pick it up.
         </p>
       </div>
@@ -24,7 +24,7 @@ export default function PortalFaqPage() {
             <CardHeader>
               <CardTitle>{entry.question}</CardTitle>
             </CardHeader>
-            <CardContent className="text-muted-foreground">{entry.answer}</CardContent>
+            <CardContent className="text-body text-muted-foreground">{entry.answer}</CardContent>
           </Card>
         ))}
       </div>

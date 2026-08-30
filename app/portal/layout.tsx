@@ -11,9 +11,9 @@ export default async function PortalLayout({ children }: { children: ReactNode }
   if (session.user.role !== "CUSTOMER") redirect("/agent")
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-surface-sunken">
       <TopNav email={session.user.email ?? ""} />
-      <main className="mx-auto max-w-4xl p-8">{children}</main>
+      <main className="mx-auto max-w-4xl space-y-6 p-8">{children}</main>
     </div>
   )
 }

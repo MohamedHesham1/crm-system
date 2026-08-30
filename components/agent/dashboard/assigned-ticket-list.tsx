@@ -1,13 +1,14 @@
 import Link from "next/link"
 
 import { Badge } from "@/components/ui/badge"
+import { SlaBadge } from "@/components/ui/sla-badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import type { TicketListItem } from "@/lib/tickets"
 
 export function AssignedTicketList({ tickets }: { tickets: TicketListItem[] }) {
   if (tickets.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground">Nothing is assigned to you right now.</p>
+      <p className="text-meta text-muted-foreground">Nothing is assigned to you right now.</p>
     )
   }
 
@@ -24,7 +25,7 @@ export function AssignedTicketList({ tickets }: { tickets: TicketListItem[] }) {
       </TableHeader>
       <TableBody>
         {tickets.map((ticket) => (
-          <TableRow key={ticket.id}>
+          <TableRow key={ticket.id} data-sla={ticket.slaBreached ? "breached" : undefined}>
             <TableCell>
               <Link href={`/agent/tickets/${ticket.id}`} className="font-medium hover:underline">
                 {ticket.subject}
@@ -40,7 +41,7 @@ export function AssignedTicketList({ tickets }: { tickets: TicketListItem[] }) {
             <TableCell className="text-muted-foreground">
               <div className="flex items-center gap-2">
                 {ticket.dueAt ? new Date(ticket.dueAt).toLocaleString() : "—"}
-                {ticket.slaBreached ? <Badge variant="destructive">SLA breached</Badge> : null}
+                {ticket.slaBreached ? <SlaBadge /> : null}
               </div>
             </TableCell>
           </TableRow>

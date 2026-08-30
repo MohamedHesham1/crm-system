@@ -7,7 +7,7 @@ export default async function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Reports</h1>
+      <h1 className="text-display">Reports</h1>
       {/* Cosmetic only. The real gate is `requireAdmin()` in
           `app/api/reports/agents/route.ts` — an AGENT who forces this prop true
           in devtools still gets a 403 from the endpoint. */}

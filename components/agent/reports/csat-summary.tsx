@@ -13,21 +13,21 @@ export function CsatSummary({
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="space-y-1">
-          <span className="text-2xl font-semibold">
+          <span className="text-metric tabular-nums">
             {csat.average === null ? "No ratings yet" : csat.average.toFixed(1)}
           </span>
           {csat.average !== null ? (
-            <p className="text-xs text-muted-foreground">out of 5 · {csat.count} responses</p>
+            <p className="text-label text-muted-foreground">out of 5 · {csat.count} responses</p>
           ) : null}
         </div>
 
         <div className="space-y-1">
           {RATING_VALUES.map((rating) => (
-            <div key={rating} className="flex items-center gap-2 text-xs text-muted-foreground">
+            <div key={rating} className="flex items-center gap-2 text-label text-muted-foreground">
               <span className="w-4">{rating}</span>
               <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
                 <div
-                  className="h-full bg-[var(--chart-1)]"
+                  className="h-full bg-chart-1"
                   style={{
                     width:
                       csat.count === 0

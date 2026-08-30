@@ -21,10 +21,10 @@ export function ReportsOverview({ isAdmin }: { isAdmin: boolean }) {
 
   return (
     <div className="space-y-6">
-      {isPending ? <p className="text-sm text-muted-foreground">Loading reports…</p> : null}
+      {isPending ? <p className="text-meta text-muted-foreground">Loading reports…</p> : null}
 
       {isError ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-meta text-destructive">
           {error instanceof Error ? error.message : "Could not load reports."}
         </p>
       ) : null}
