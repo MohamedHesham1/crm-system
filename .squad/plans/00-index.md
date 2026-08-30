@@ -12,3 +12,4 @@ One row per feature folder under `.squad/plans/`. `NN` continues as a global exe
 | activity | [`activity/00-overview.md`](activity/00-overview.md) | 06 |
 | dashboard | [`dashboard/00-overview.md`](dashboard/00-overview.md) | 07 |
 | reports | [`reports/00-overview.md`](reports/00-overview.md) | 08 |
+| tests | [`tests/00-overview.md`](tests/00-overview.md) | 09 |
