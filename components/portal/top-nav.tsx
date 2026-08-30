@@ -12,6 +12,9 @@ export function TopNav({ email }: { email: string }) {
         <Link href="/portal/tickets" className="text-sm text-muted-foreground hover:text-foreground">
           My tickets
         </Link>
+        <Link href="/portal/faq" className="text-sm text-muted-foreground hover:text-foreground">
+          FAQ
+        </Link>
         <span className="text-sm text-muted-foreground">{email}</span>
         <SignOutButton />
       </div>

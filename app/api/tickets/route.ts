@@ -2,6 +2,7 @@ import { logActivity } from "@/lib/activity"
 import { prisma } from "@/lib/prisma"
 import { notFound, readJson, validationError } from "@/lib/api/http"
 import { defaultDueAt, isSlaBreached } from "@/lib/sla"
+import { TICKET_LIST_SELECT } from "@/lib/ticket-select"
 import { resolveViewer, ticketScopeWhere } from "@/lib/ticket-access"
 import {
   createPortalTicketSchema,
@@ -11,18 +12,6 @@ import {
   type TicketPriority,
   type TicketStatus,
 } from "@/lib/validation/ticket"
-
-const TICKET_SELECT = {
-  id: true,
-  subject: true,
-  category: true,
-  priority: true,
-  status: true,
-  dueAt: true,
-  createdAt: true,
-  customer: { select: { id: true, name: true } },
-  assignedAgent: { select: { id: true, name: true } },
-} as const
 
 export async function GET(request: Request) {
   const resolved = await resolveViewer()
@@ -47,7 +36,7 @@ export async function GET(request: Request) {
   const tickets = await prisma.ticket.findMany({
     where: { ...ticketScopeWhere(viewer), ...filters },
     orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
-    select: TICKET_SELECT,
+    select: TICKET_LIST_SELECT,
   })
 
   return Response.json({
@@ -111,7 +100,7 @@ export async function POST(request: Request) {
   const ticket = await prisma.$transaction(async (tx) => {
     const created = await tx.ticket.create({
       data: { subject, description, category, priority, status: "OPEN", customerId, assignedAgentId, dueAt },
-      select: TICKET_SELECT,
+      select: TICKET_LIST_SELECT,
     })
 
     await logActivity(tx, [
