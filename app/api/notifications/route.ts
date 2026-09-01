@@ -1,14 +1,10 @@
 import { prisma } from "@/lib/prisma"
-import { requireUser } from "@/lib/api/http"
+import { withAuth } from "@/lib/api/http"
 
 /** Enough to fill the bell dropdown. `unreadCount` counts all of them, not just these. */
 const NOTIFICATION_PAGE_SIZE = 20
 
-export async function GET() {
-  const resolved = await requireUser()
-  if (!resolved.ok) return resolved.response
-  const { user } = resolved
-
+export const GET = withAuth({ role: "user" }, async (_request, _ctx, user) => {
   const [notifications, unreadCount] = await Promise.all([
     prisma.notification.findMany({
       where: { userId: user.id },
@@ -27,4 +23,4 @@ export async function GET() {
   ])
 
   return Response.json({ notifications, unreadCount })
-}
+})

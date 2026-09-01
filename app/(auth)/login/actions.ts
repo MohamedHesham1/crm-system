@@ -1,6 +1,6 @@
 "use server"
 
-import { AuthError } from "next-auth"
+import { AuthError, CredentialsSignin } from "next-auth"
 
 import { signIn } from "@/auth"
 import { loginSchema } from "@/lib/validation/auth"
@@ -27,6 +27,9 @@ export async function loginAction(
       redirectTo: "/",
     })
   } catch (error) {
+    if (error instanceof CredentialsSignin && error.code === "rate-limited") {
+      return { error: "Too many sign-in attempts. Try again in a few minutes." }
+    }
     if (error instanceof AuthError) {
       return { error: "Invalid email or password." }
     }

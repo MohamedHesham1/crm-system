@@ -1,9 +1,10 @@
 import { logActivity } from "@/lib/activity"
 import { prisma } from "@/lib/prisma"
-import { notFound, readJson, validationError } from "@/lib/api/http"
+import { notFound, readJson, validationError, withAuth } from "@/lib/api/http"
+import { parsePagination } from "@/lib/api/pagination"
 import { defaultDueAt, isSlaBreached } from "@/lib/sla"
 import { TICKET_LIST_SELECT } from "@/lib/ticket-select"
-import { resolveViewer, ticketScopeWhere } from "@/lib/ticket-access"
+import { ticketScopeWhere } from "@/lib/ticket-access"
 import {
   createPortalTicketSchema,
   createTicketSchema,
@@ -13,11 +14,7 @@ import {
   type TicketStatus,
 } from "@/lib/validation/ticket"
 
-export async function GET(request: Request) {
-  const resolved = await resolveViewer()
-  if (!resolved.ok) return resolved.response
-  const { viewer } = resolved
-
+export const GET = withAuth({ role: "viewer" }, async (request, _ctx, viewer) => {
   const searchParams = new URL(request.url).searchParams
   const status = searchParams.get("status")
   const priority = searchParams.get("priority")
@@ -33,22 +30,29 @@ export async function GET(request: Request) {
   if (assigned === "me") filters.assignedAgentId = viewer.id
   if (assigned === "none") filters.assignedAgentId = null
 
-  const tickets = await prisma.ticket.findMany({
-    where: { ...ticketScopeWhere(viewer), ...filters },
-    orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
-    select: TICKET_LIST_SELECT,
-  })
+  const { page, pageSize, skip, take } = parsePagination(request)
+  const where = { ...ticketScopeWhere(viewer), ...filters }
+
+  const [tickets, total] = await Promise.all([
+    prisma.ticket.findMany({
+      where,
+      orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
+      skip,
+      take,
+      select: TICKET_LIST_SELECT,
+    }),
+    prisma.ticket.count({ where }),
+  ])
 
   return Response.json({
     tickets: tickets.map((ticket) => ({ ...ticket, slaBreached: isSlaBreached(ticket) })),
+    total,
+    page,
+    pageSize,
   })
-}
+})
 
-export async function POST(request: Request) {
-  const resolved = await resolveViewer()
-  if (!resolved.ok) return resolved.response
-  const { viewer } = resolved
-
+export const POST = withAuth({ role: "viewer" }, async (request, _ctx, viewer) => {
   if (viewer.kind === "orphan") {
     return Response.json(
       { error: "No customer profile is linked to this account." },
@@ -117,4 +121,4 @@ export async function POST(request: Request) {
   })
 
   return Response.json({ ticket: { ...ticket, slaBreached: isSlaBreached(ticket) } }, { status: 201 })
-}
+})

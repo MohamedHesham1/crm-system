@@ -1,19 +1,21 @@
-import { auth } from "@/auth"
 import { logActivity, notify } from "@/lib/activity"
 import { prisma } from "@/lib/prisma"
-import { requireAdmin } from "@/lib/api/http"
+import { withAuth } from "@/lib/api/http"
 import { isSlaHalfElapsed } from "@/lib/sla"
+import { NOT_DELETED } from "@/lib/ticket-access"
 
 /**
  * Manual admin action — there is no scheduler in this story. A cron or queue
  * worker that calls this on a timer is the deferred follow-up.
  */
-export async function POST() {
-  const denied = await requireAdmin()
-  if (denied) return denied
-
+export const POST = withAuth({ role: "admin" }, async (_request, _ctx, admin) => {
   const candidateTickets = await prisma.ticket.findMany({
-    where: { assignedAgentId: null, status: { in: ["OPEN", "IN_PROGRESS"] }, dueAt: { not: null } },
+    where: {
+      assignedAgentId: null,
+      status: { in: ["OPEN", "IN_PROGRESS"] },
+      dueAt: { not: null },
+      ...NOT_DELETED,
+    },
     select: { id: true, createdAt: true, dueAt: true },
   })
   const eligible = candidateTickets
@@ -30,7 +32,7 @@ export async function POST() {
 
   const load = await prisma.ticket.groupBy({
     by: ["assignedAgentId"],
-    where: { assignedAgentId: { not: null }, status: { in: ["OPEN", "IN_PROGRESS"] } },
+    where: { assignedAgentId: { not: null }, status: { in: ["OPEN", "IN_PROGRESS"] }, ...NOT_DELETED },
     _count: { _all: true },
   })
 
@@ -55,14 +57,13 @@ export async function POST() {
     loadByAgent.set(best.id, bestLoad + 1)
   }
 
-  const session = await auth()
-  const actorId = session!.user.id
-  const actorName = session!.user.name ?? "Unknown user"
+  const actorId = admin.id
+  const actorName = admin.name
 
   const subjects = new Map(
     (
       await prisma.ticket.findMany({
-        where: { id: { in: assignments.map((assignment) => assignment.ticketId) } },
+        where: { id: { in: assignments.map((assignment) => assignment.ticketId) }, ...NOT_DELETED },
         select: { id: true, subject: true },
       })
     ).map((ticket) => [ticket.id, ticket.subject]),
@@ -101,4 +102,4 @@ export async function POST() {
   }
 
   return Response.json({ swept: assignments.length, assignments })
-}
+})

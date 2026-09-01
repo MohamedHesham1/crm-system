@@ -16,10 +16,14 @@ const ALL = "__all__"
 export function AuditTable() {
   const [ticketId, setTicketId] = useState<string | undefined>(undefined)
 
-  const { data: tickets } = useQuery({
-    queryKey: ticketKeys.list(),
-    queryFn: () => fetchTickets(),
+  // `pageSize: 100` (the server-side maximum) rather than the default 25:
+  // this list feeds a filter dropdown, not a paged table, so it should cover
+  // as many tickets as the endpoint allows in one request.
+  const { data: ticketPage } = useQuery({
+    queryKey: ticketKeys.list({ pageSize: 100 }),
+    queryFn: () => fetchTickets({ pageSize: 100 }),
   })
+  const tickets = ticketPage?.items
 
   const { data, isPending, isError, error } = useQuery({
     queryKey: auditKeys.list(ticketId),

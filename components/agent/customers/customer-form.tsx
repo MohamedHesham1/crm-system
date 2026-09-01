@@ -32,7 +32,7 @@ export function CustomerForm() {
   const mutation = useMutation({
     mutationFn: createCustomer,
     onSuccess: async (customer) => {
-      await queryClient.invalidateQueries({ queryKey: customerKeys.list() })
+      await queryClient.invalidateQueries({ queryKey: customerKeys.all })
       router.push(`/agent/customers/${customer.id}`)
     },
     onError: (error) => {

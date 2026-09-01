@@ -53,14 +53,22 @@ export async function resolveViewer(): Promise<
 }
 
 /**
- * The `where` fragment that scopes a ticket query to a viewer. Staff get `{}` —
- * no scoping. An orphan gets a clause that matches nothing, so the caller gets
- * `[]` rather than an error or a leak.
+ * "Not soft-deleted." Spread into every ticket query that does not already go
+ * through `ticketScopeWhere`. A ticket query in this codebase with neither is a
+ * bug: soft-deleted rows would reappear in a count, a report or the assignment
+ * sweep while staying invisible in the list they were deleted from.
+ */
+export const NOT_DELETED = { deletedAt: null } as const
+
+/**
+ * The `where` fragment that scopes a ticket query to a viewer. Staff get just
+ * the soft-delete filter — no further scoping. An orphan gets a clause that
+ * matches nothing, so the caller gets `[]` rather than an error or a leak.
  */
 export function ticketScopeWhere(viewer: Viewer) {
-  if (viewer.kind === "staff") return {}
-  if (viewer.kind === "customer") return { customerId: viewer.customerId }
-  return { customerId: "__none__" }
+  if (viewer.kind === "staff") return { ...NOT_DELETED }
+  if (viewer.kind === "customer") return { ...NOT_DELETED, customerId: viewer.customerId }
+  return { ...NOT_DELETED, customerId: "__none__" }
 }
 
 export type AssignmentDecision = { allowed: true } | { allowed: false; reason: string }

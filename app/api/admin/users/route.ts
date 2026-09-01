@@ -1,26 +1,20 @@
 import { Prisma } from "@prisma/client"
 
 import { prisma } from "@/lib/prisma"
-import { readJson, requireAdmin, validationError } from "@/lib/api/http"
+import { readJson, validationError, withAuth } from "@/lib/api/http"
 import { hashPassword } from "@/lib/password"
 import { createUserSchema } from "@/lib/validation/user"
 
-export async function GET() {
-  const denied = await requireAdmin()
-  if (denied) return denied
-
+export const GET = withAuth({ role: "admin" }, async () => {
   const users = await prisma.user.findMany({
     orderBy: { createdAt: "asc" },
     select: { id: true, name: true, email: true, role: true, createdAt: true },
   })
 
   return Response.json({ users })
-}
+})
 
-export async function POST(request: Request) {
-  const denied = await requireAdmin()
-  if (denied) return denied
-
+export const POST = withAuth({ role: "admin" }, async (request) => {
   const body = await readJson(request)
   if (!body.ok) return body.response
 
@@ -48,4 +42,4 @@ export async function POST(request: Request) {
     }
     throw error
   }
-}
+})

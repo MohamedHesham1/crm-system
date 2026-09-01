@@ -42,7 +42,13 @@ export function TicketForm() {
   const queryClient = useQueryClient()
   const router = useRouter()
 
-  const { data: customers } = useQuery({ queryKey: customerKeys.list(), queryFn: fetchCustomers })
+  // `pageSize: 100` (the server-side maximum) rather than the default 25:
+  // this list feeds a select dropdown, not a paged table.
+  const { data: customerPage } = useQuery({
+    queryKey: customerKeys.list(1),
+    queryFn: () => fetchCustomers(1, 100),
+  })
+  const customers = customerPage?.items
 
   const mutation = useMutation({
     mutationFn: createTicket,

@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -22,6 +22,10 @@ import { TICKET_PRIORITIES, TICKET_STATUSES } from "@/lib/validation/ticket"
 
 const ALL = "__all__"
 
+function hasActiveFilters(filters: TicketFilters): boolean {
+  return filters.status !== undefined || filters.priority !== undefined || filters.assigned !== undefined
+}
+
 export function TicketTable() {
   const { data: session } = useSession()
   const queryClient = useQueryClient()
@@ -31,6 +35,7 @@ export function TicketTable() {
   const { data, isPending, isError, error } = useQuery({
     queryKey: ticketKeys.list(filters),
     queryFn: () => fetchTickets(filters),
+    placeholderData: keepPreviousData,
   })
 
   const claimMutation = useMutation({
@@ -59,7 +64,11 @@ export function TicketTable() {
         <Select
           value={filters.status ?? ALL}
           onValueChange={(value) =>
-            setFilters((prev) => ({ ...prev, status: value === ALL ? undefined : (value as TicketFilters["status"]) }))
+            setFilters((prev) => ({
+              ...prev,
+              status: value === ALL ? undefined : (value as TicketFilters["status"]),
+              page: 1,
+            }))
           }
         >
           <SelectTrigger size="sm" className="w-36">
@@ -78,7 +87,11 @@ export function TicketTable() {
         <Select
           value={filters.priority ?? ALL}
           onValueChange={(value) =>
-            setFilters((prev) => ({ ...prev, priority: value === ALL ? undefined : (value as TicketFilters["priority"]) }))
+            setFilters((prev) => ({
+              ...prev,
+              priority: value === ALL ? undefined : (value as TicketFilters["priority"]),
+              page: 1,
+            }))
           }
         >
           <SelectTrigger size="sm" className="w-36">
@@ -97,7 +110,11 @@ export function TicketTable() {
         <Select
           value={filters.assigned ?? ALL}
           onValueChange={(value) =>
-            setFilters((prev) => ({ ...prev, assigned: value === ALL ? undefined : (value as TicketFilters["assigned"]) }))
+            setFilters((prev) => ({
+              ...prev,
+              assigned: value === ALL ? undefined : (value as TicketFilters["assigned"]),
+              page: 1,
+            }))
           }
         >
           <SelectTrigger size="sm" className="w-36">
@@ -110,7 +127,7 @@ export function TicketTable() {
           </SelectContent>
         </Select>
 
-        {Object.keys(filters).length > 0 ? (
+        {hasActiveFilters(filters) ? (
           <Button type="button" variant="ghost" size="sm" onClick={() => setFilters({})}>
             Clear filters
           </Button>
@@ -142,11 +159,11 @@ export function TicketTable() {
         </p>
       ) : null}
 
-      {!isPending && !isError && data.length === 0 ? (
+      {!isPending && !isError && data.items.length === 0 ? (
         <p className="text-meta text-muted-foreground">No tickets match these filters.</p>
       ) : null}
 
-      {!isPending && !isError && data.length > 0 ? (
+      {!isPending && !isError && data.items.length > 0 ? (
         <Table>
           <TableHeader>
             <TableRow>
@@ -159,7 +176,7 @@ export function TicketTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((ticket) => (
+            {data.items.map((ticket) => (
               <TableRow key={ticket.id} data-sla={ticket.slaBreached ? "breached" : undefined}>
                 <TableCell>
                   <Link
@@ -204,6 +221,37 @@ export function TicketTable() {
             ))}
           </TableBody>
         </Table>
+      ) : null}
+
+      {!isPending && !isError && data.total > data.pageSize ? (
+        <div className="flex items-center justify-between">
+          <p className="text-meta text-muted-foreground">
+            {`Showing ${(data.page - 1) * data.pageSize + 1}–${Math.min(
+              data.page * data.pageSize,
+              data.total,
+            )} of ${data.total}`}
+          </p>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={data.page <= 1}
+              onClick={() => setFilters((prev) => ({ ...prev, page: (prev.page ?? 1) - 1 }))}
+            >
+              Previous
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={data.page * data.pageSize >= data.total}
+              onClick={() => setFilters((prev) => ({ ...prev, page: (prev.page ?? 1) + 1 }))}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
       ) : null}
 
       {claimMutation.isError ? (

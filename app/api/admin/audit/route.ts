@@ -1,13 +1,10 @@
 import { prisma } from "@/lib/prisma"
-import { requireAdmin } from "@/lib/api/http"
+import { withAuth } from "@/lib/api/http"
 
 /** Newest first, capped. Pagination and export are explicitly out of scope. */
 const AUDIT_PAGE_SIZE = 100
 
-export async function GET(request: Request) {
-  const denied = await requireAdmin()
-  if (denied) return denied
-
+export const GET = withAuth({ role: "admin" }, async (request) => {
   const ticketId = new URL(request.url).searchParams.get("ticketId")
 
   const logs = await prisma.auditLog.findMany({
@@ -26,4 +23,4 @@ export async function GET(request: Request) {
   })
 
   return Response.json({ logs })
-}
+})

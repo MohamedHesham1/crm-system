@@ -1,3 +1,4 @@
+import type { Paginated } from "@/lib/tickets"
 import type { CreateCustomerInput, UpdateCustomerInput } from "@/lib/validation/customer"
 import { request } from "@/lib/api/client"
 
@@ -24,13 +25,26 @@ export type Customer = CustomerListItem & {
 
 export const customerKeys = {
   all: ["customers"] as const,
-  list: () => [...customerKeys.all, "list"] as const,
+  list: (page = 1) => [...customerKeys.all, "list", page] as const,
   detail: (id: string) => [...customerKeys.all, "detail", id] as const,
 }
 
-export async function fetchCustomers(): Promise<CustomerListItem[]> {
-  const { customers } = await request<{ customers: CustomerListItem[] }>("/api/customers")
-  return customers
+export async function fetchCustomers(
+  page = 1,
+  pageSize?: number,
+): Promise<Paginated<CustomerListItem>> {
+  const params = new URLSearchParams()
+  if (page > 1) params.set("page", String(page))
+  if (pageSize) params.set("pageSize", String(pageSize))
+  const query = params.toString()
+
+  const { customers, total, page: returnedPage, pageSize: returnedPageSize } = await request<{
+    customers: CustomerListItem[]
+    total: number
+    page: number
+    pageSize: number
+  }>(`/api/customers${query ? `?${query}` : ""}`)
+  return { items: customers, total, page: returnedPage, pageSize: returnedPageSize }
 }
 
 export async function fetchCustomer(id: string): Promise<Customer> {

@@ -90,6 +90,13 @@ model Ticket {
   /// other writer.
   resolvedAt      DateTime?
 
+  /// **Soft delete.** `DELETE /api/tickets/[id]` sets this instead of removing
+  /// the row, because `AuditLog` deliberately has no foreign key on `entityId`
+  /// and a hard delete leaves every `TICKET_DELETED` entry pointing at nothing.
+  /// NULL means "live"; every read path filters on it, most of them through
+  /// `ticketScopeWhere()` in `lib/ticket-access.ts`.
+  deletedAt       DateTime?
+
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
@@ -101,6 +108,7 @@ model Ticket {
   @@index([assignedAgentId])
   @@index([customerId])
   @@index([resolvedAt])
+  @@index([deletedAt])
 }
 
 /// One post-resolution rating from the customer who owns the ticket.

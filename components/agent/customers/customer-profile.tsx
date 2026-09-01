@@ -24,7 +24,7 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
     onSuccess: async (customer) => {
       setNotes(null)
       queryClient.setQueryData(customerKeys.detail(customerId), customer)
-      await queryClient.invalidateQueries({ queryKey: customerKeys.list() })
+      await queryClient.invalidateQueries({ queryKey: customerKeys.all })
     },
   })
 

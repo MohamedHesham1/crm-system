@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma"
-import { requireUser } from "@/lib/api/http"
+import { withAuth } from "@/lib/api/http"
 import { isStaff } from "@/lib/roles"
 import { TERMINAL_STATUSES } from "@/lib/sla"
+import { NOT_DELETED } from "@/lib/ticket-access"
 import { summariseSla } from "@/lib/report-metrics"
 import { RATING_VALUES } from "@/lib/validation/feedback"
 import { TICKET_PRIORITIES, TICKET_STATUSES } from "@/lib/validation/ticket"
@@ -27,21 +28,18 @@ function zeroFill<K extends string>(
   return result
 }
 
-export async function GET() {
-  const resolved = await requireUser()
-  if (!resolved.ok) return resolved.response
-
-  // Same reasoning as `app/api/dashboard/route.ts:20–25`: `requireAgent()` would
-  // do here (no caller identity is needed), but keeping both staff read
+export const GET = withAuth({ role: "user" }, async (_request, _ctx, user) => {
+  // Same reasoning as `app/api/dashboard/route.ts:20–25`: `agent` would do
+  // here (no caller identity is needed), but keeping both staff read
   // endpoints on one idiom is worth more than saving a line. A CUSTOMER gets a
   // 403 — there is no customer-shaped reading of internal performance.
-  if (!isStaff(resolved.user.role)) return Response.json({ error: "Forbidden" }, { status: 403 })
+  if (!isStaff(user.role)) return Response.json({ error: "Forbidden" }, { status: 403 })
 
   const [byStatusRows, byPriorityRows, resolvedRows, csat, ratingRows] = await Promise.all([
-    prisma.ticket.groupBy({ by: ["status"], _count: { _all: true } }),
-    prisma.ticket.groupBy({ by: ["priority"], _count: { _all: true } }),
+    prisma.ticket.groupBy({ by: ["status"], where: NOT_DELETED, _count: { _all: true } }),
+    prisma.ticket.groupBy({ by: ["priority"], where: NOT_DELETED, _count: { _all: true } }),
     prisma.ticket.findMany({
-      where: { resolvedAt: { not: null } },
+      where: { resolvedAt: { not: null }, ...NOT_DELETED },
       select: { createdAt: true, resolvedAt: true, dueAt: true, assignedAgentId: true },
     }),
     prisma.feedback.aggregate({ _avg: { rating: true }, _count: { _all: true } }),
@@ -78,4 +76,4 @@ export async function GET() {
     },
     terminalStatuses: TERMINAL_STATUSES,
   })
-}
+})

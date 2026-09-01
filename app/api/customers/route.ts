@@ -1,25 +1,29 @@
 import { Prisma } from "@prisma/client"
 
 import { prisma } from "@/lib/prisma"
-import { readJson, requireAgent, validationError } from "@/lib/api/http"
+import { readJson, validationError, withAuth } from "@/lib/api/http"
+import { parsePagination } from "@/lib/api/pagination"
 import { createCustomerSchema } from "@/lib/validation/customer"
 
-export async function GET() {
-  const denied = await requireAgent()
-  if (denied) return denied
+export const GET = withAuth({ role: "agent" }, async (request) => {
+  const { page, pageSize, skip, take } = parsePagination(request)
+  const where = {}
 
-  const customers = await prisma.customer.findMany({
-    orderBy: { name: "asc" },
-    select: { id: true, name: true, email: true, phone: true, company: true },
-  })
+  const [customers, total] = await Promise.all([
+    prisma.customer.findMany({
+      where,
+      orderBy: { name: "asc" },
+      skip,
+      take,
+      select: { id: true, name: true, email: true, phone: true, company: true },
+    }),
+    prisma.customer.count({ where }),
+  ])
 
-  return Response.json({ customers })
-}
+  return Response.json({ customers, total, page, pageSize })
+})
 
-export async function POST(request: Request) {
-  const denied = await requireAgent()
-  if (denied) return denied
-
+export const POST = withAuth({ role: "agent" }, async (request) => {
   const body = await readJson(request)
   if (!body.ok) return body.response
 
@@ -45,4 +49,4 @@ export async function POST(request: Request) {
     }
     throw error
   }
-}
+})

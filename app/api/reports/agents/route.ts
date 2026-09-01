@@ -1,17 +1,12 @@
 import { prisma } from "@/lib/prisma"
-import { requireAdmin } from "@/lib/api/http"
+import { withAuth } from "@/lib/api/http"
+import { NOT_DELETED } from "@/lib/ticket-access"
 import { summariseAgents } from "@/lib/report-metrics"
 
-export async function GET() {
-  // Same two lines as `app/api/admin/audit/route.ts:8–9`. `middleware.ts`
-  // excludes `/api/**` (matcher, line 37), so this is the only thing standing
-  // between a plain AGENT and a per-agent leaderboard.
-  const denied = await requireAdmin()
-  if (denied) return denied
-
+export const GET = withAuth({ role: "admin" }, async () => {
   const [rows, staff] = await Promise.all([
     prisma.ticket.findMany({
-      where: { resolvedAt: { not: null } },
+      where: { resolvedAt: { not: null }, ...NOT_DELETED },
       select: { createdAt: true, resolvedAt: true, dueAt: true, assignedAgentId: true },
     }),
     prisma.user.findMany({
@@ -34,4 +29,4 @@ export async function GET() {
     .sort((a, b) => b.resolved - a.resolved)
 
   return Response.json({ agents })
-}
+})

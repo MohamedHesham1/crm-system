@@ -51,6 +51,10 @@ export type TicketFilters = {
   status?: TicketStatus
   priority?: TicketPriority
   assigned?: "me" | "none"
+  /** 1-based. Omitted means page 1. Part of the filter object so it is part of the cache key. */
+  page?: number
+  /** Omitted means the server default (25). Capped server-side at 100. */
+  pageSize?: number
 }
 
 export type AssignSweepResult = {
@@ -58,6 +62,9 @@ export type AssignSweepResult = {
   assignments: { ticketId: string; agentId: string; agentName: string }[]
   reason?: string
 }
+
+/** Shared shape for every paginated list endpoint in this app. */
+export type Paginated<T> = { items: T[]; total: number; page: number; pageSize: number }
 
 export const ticketKeys = {
   all: ["tickets"] as const,
@@ -71,15 +78,20 @@ function buildQuery(filters: TicketFilters): string {
   if (filters.status) params.set("status", filters.status)
   if (filters.priority) params.set("priority", filters.priority)
   if (filters.assigned) params.set("assigned", filters.assigned)
+  if (filters.page && filters.page > 1) params.set("page", String(filters.page))
+  if (filters.pageSize) params.set("pageSize", String(filters.pageSize))
   const query = params.toString()
   return query ? `?${query}` : ""
 }
 
-export async function fetchTickets(filters: TicketFilters = {}): Promise<TicketListItem[]> {
-  const { tickets } = await request<{ tickets: TicketListItem[] }>(
-    `/api/tickets${buildQuery(filters)}`,
-  )
-  return tickets
+export async function fetchTickets(filters: TicketFilters = {}): Promise<Paginated<TicketListItem>> {
+  const { tickets, total, page, pageSize } = await request<{
+    tickets: TicketListItem[]
+    total: number
+    page: number
+    pageSize: number
+  }>(`/api/tickets${buildQuery(filters)}`)
+  return { items: tickets, total, page, pageSize }
 }
 
 export async function fetchTicket(id: string): Promise<TicketDetail> {

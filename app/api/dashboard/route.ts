@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma"
-import { requireUser } from "@/lib/api/http"
+import { withAuth } from "@/lib/api/http"
 import { isStaff } from "@/lib/roles"
 import { isSlaBreached, liveStatusWhere, slaBreachedWhere } from "@/lib/sla"
+import { NOT_DELETED } from "@/lib/ticket-access"
 import { TICKET_LIST_SELECT } from "@/lib/ticket-select"
 import { TICKET_STATUSES, type TicketStatus } from "@/lib/validation/ticket"
 
@@ -12,23 +13,20 @@ import { TICKET_STATUSES, type TicketStatus } from "@/lib/validation/ticket"
  */
 const DASHBOARD_TICKET_LIMIT = 10
 
-export async function GET() {
-  const resolved = await requireUser()
-  if (!resolved.ok) return resolved.response
-  const { user } = resolved
-
-  // `requireUser()` rather than `requireAgent()`: this endpoint needs the
-  // caller's **id**, and `requireAgent()` returns only a Response-or-null. The
-  // role check is therefore explicit. A CUSTOMER gets a `403` here — unlike
-  // `/api/notifications`, which returns an empty `200`, because there is no
-  // customer-shaped reading of "the unassigned agent queue".
+export const GET = withAuth({ role: "user" }, async (_request, _ctx, user) => {
+  // `"user"` rather than `"agent"`: this endpoint needs the caller's **id**,
+  // and `"agent"` carries no identity on its own — see `withAuth`'s
+  // `AuthPayloads`. The role check is therefore explicit. A CUSTOMER gets a
+  // `403` here — unlike `/api/notifications`, which returns an empty `200`,
+  // because there is no customer-shaped reading of "the unassigned agent
+  // queue".
   if (!isStaff(user.role)) return Response.json({ error: "Forbidden" }, { status: 403 })
 
   // One `now` for all five queries. Computing it per-query lets a slow request
   // count a ticket as breached in one number and not in the next.
   const now = new Date()
-  const mine = { assignedAgentId: user.id }
-  const queue = { assignedAgentId: null }
+  const mine = { ...NOT_DELETED, assignedAgentId: user.id }
+  const queue = { ...NOT_DELETED, assignedAgentId: null }
 
   const [byStatusRows, assignedBreached, queueUnassigned, queueBreached, tickets] =
     await Promise.all([
@@ -67,4 +65,4 @@ export async function GET() {
     queue: { unassigned: queueUnassigned, breached: queueBreached },
     tickets: tickets.map((ticket) => ({ ...ticket, slaBreached: isSlaBreached(ticket, now) })),
   })
-}
+})
