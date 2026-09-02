@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SlaBadge } from "@/components/ui/sla-badge"
+import { Spinner } from "@/components/ui/spinner"
+import { StatusBadge } from "@/components/ui/status-badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   ApiError,
@@ -151,7 +153,7 @@ export function TicketTable() {
         ) : null}
       </div>
 
-      {isPending ? <p className="text-meta text-muted-foreground">Loading tickets…</p> : null}
+      {isPending ? <Spinner label="Loading tickets…" /> : null}
 
       {isError ? (
         <p role="alert" className="text-meta text-destructive">
@@ -191,7 +193,7 @@ export function TicketTable() {
                   <Badge variant="outline">{ticket.priority}</Badge>
                 </TableCell>
                 <TableCell>
-                  <Badge variant="secondary">{ticket.status}</Badge>
+                  <StatusBadge status={ticket.status} />
                 </TableCell>
                 <TableCell>
                   {ticket.assignedAgent ? (

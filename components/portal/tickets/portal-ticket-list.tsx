@@ -6,6 +6,8 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
+import { StatusBadge } from "@/components/ui/status-badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { fetchTickets, ticketKeys } from "@/lib/tickets"
 
@@ -18,7 +20,7 @@ export function PortalTicketList() {
     placeholderData: keepPreviousData,
   })
 
-  if (isPending) return <p className="text-meta text-muted-foreground">Loading tickets…</p>
+  if (isPending) return <Spinner label="Loading tickets…" />
 
   if (isError) {
     return (
@@ -52,7 +54,7 @@ export function PortalTicketList() {
                 </Link>
               </TableCell>
               <TableCell>
-                <Badge variant="secondary">{ticket.status}</Badge>
+                <StatusBadge status={ticket.status} />
               </TableCell>
               <TableCell>
                 <Badge variant="outline">{ticket.priority}</Badge>

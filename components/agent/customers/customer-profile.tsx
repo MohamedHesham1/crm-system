@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
 import { customerKeys, fetchCustomer, updateCustomer } from "@/lib/customers"
 
@@ -28,7 +29,7 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
     },
   })
 
-  if (isPending) return <p className="text-meta text-muted-foreground">Loading customer…</p>
+  if (isPending) return <Spinner label="Loading customer…" />
 
   if (isError) {
     return (

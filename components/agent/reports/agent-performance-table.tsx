@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query"
 
+import { Spinner } from "@/components/ui/spinner"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatDuration } from "@/lib/report-metrics"
 import { fetchAgentPerformance, reportKeys } from "@/lib/reports"
@@ -13,7 +14,7 @@ export function AgentPerformanceTable() {
     staleTime: 0,
   })
 
-  if (isPending) return <p className="text-meta text-muted-foreground">Loading agent performance…</p>
+  if (isPending) return <Spinner label="Loading agent performance…" />
 
   if (isError) {
     return (

@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query"
 
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Spinner } from "@/components/ui/spinner"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { auditKeys, fetchAuditLogs } from "@/lib/audit"
 import { fetchTickets, ticketKeys } from "@/lib/tickets"
@@ -51,7 +52,7 @@ export function AuditTable() {
         </SelectContent>
       </Select>
 
-      {isPending ? <p className="text-meta text-muted-foreground">Loading activity…</p> : null}
+      {isPending ? <Spinner label="Loading activity…" /> : null}
 
       {isError ? (
         <p role="alert" className="text-meta text-destructive">

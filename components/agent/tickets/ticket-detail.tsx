@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SlaBadge } from "@/components/ui/sla-badge"
+import { Spinner } from "@/components/ui/spinner"
 import { CommentThread } from "@/components/agent/tickets/comment-thread"
 import { ApiError, fetchTicket, reopenTicket, ticketKeys, updateTicket } from "@/lib/tickets"
 import { fetchUsers, userKeys } from "@/lib/users"
@@ -44,7 +45,7 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
     },
   })
 
-  if (isPending) return <p className="text-meta text-muted-foreground">Loading ticket…</p>
+  if (isPending) return <Spinner label="Loading ticket…" />
 
   if (isError) {
     return (

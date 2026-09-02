@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query"
 
+import { Spinner } from "@/components/ui/spinner"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { fetchUsers, userKeys } from "@/lib/users"
 
@@ -11,7 +12,7 @@ export function UserTable() {
     queryFn: fetchUsers,
   })
 
-  if (isPending) return <p className="text-meta text-muted-foreground">Loading accounts…</p>
+  if (isPending) return <Spinner label="Loading accounts…" />
 
   if (isError) {
     return (

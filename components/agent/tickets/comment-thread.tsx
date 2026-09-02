@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
 import { ApiError, fetchComments, postComment, ticketKeys } from "@/lib/tickets"
 import { createCommentSchema } from "@/lib/validation/ticket"
@@ -49,7 +50,7 @@ export function CommentThread({ ticketId }: { ticketId: string }) {
     <div className="space-y-4">
       <h2 className="text-title">Comments</h2>
 
-      {isPending ? <p className="text-meta text-muted-foreground">Loading comments…</p> : null}
+      {isPending ? <Spinner label="Loading comments…" /> : null}
 
       {isError ? (
         <p role="alert" className="text-meta text-destructive">

@@ -3,6 +3,8 @@
 import { useQuery } from "@tanstack/react-query"
 
 import { Badge } from "@/components/ui/badge"
+import { Spinner } from "@/components/ui/spinner"
+import { StatusBadge } from "@/components/ui/status-badge"
 import { CommentThread } from "@/components/agent/tickets/comment-thread"
 import { FeedbackForm } from "@/components/portal/tickets/feedback-form"
 import { TERMINAL_STATUSES } from "@/lib/sla"
@@ -14,7 +16,7 @@ export function PortalTicketDetail({ ticketId }: { ticketId: string }) {
     queryFn: () => fetchTicket(ticketId),
   })
 
-  if (isPending) return <p className="text-meta text-muted-foreground">Loading ticket…</p>
+  if (isPending) return <Spinner label="Loading ticket…" />
 
   if (isError) {
     return (
@@ -29,7 +31,7 @@ export function PortalTicketDetail({ ticketId }: { ticketId: string }) {
       <div className="space-y-1">
         <div className="flex items-center gap-2">
           <h1 className="text-display">{data.subject}</h1>
-          <Badge variant="secondary">{data.status}</Badge>
+          <StatusBadge status={data.status} />
           <Badge variant="outline">{data.priority}</Badge>
         </div>
         <p className="text-meta text-muted-foreground">Category: {data.category}</p>

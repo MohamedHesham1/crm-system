@@ -2,6 +2,7 @@ import Link from "next/link"
 
 import { Badge } from "@/components/ui/badge"
 import { SlaBadge } from "@/components/ui/sla-badge"
+import { StatusBadge } from "@/components/ui/status-badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import type { TicketListItem } from "@/lib/tickets"
 
@@ -36,7 +37,7 @@ export function AssignedTicketList({ tickets }: { tickets: TicketListItem[] }) {
               <Badge variant="outline">{ticket.priority}</Badge>
             </TableCell>
             <TableCell>
-              <Badge variant="secondary">{ticket.status}</Badge>
+              <StatusBadge status={ticket.status} />
             </TableCell>
             <TableCell className="text-muted-foreground">
               <div className="flex items-center gap-2">

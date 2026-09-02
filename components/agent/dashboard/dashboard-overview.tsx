@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 
 import { AssignedTicketList } from "@/components/agent/dashboard/assigned-ticket-list"
 import { SummaryCards } from "@/components/agent/dashboard/summary-cards"
+import { Spinner } from "@/components/ui/spinner"
 import { dashboardKeys, fetchDashboardSummary } from "@/lib/dashboard"
 
 export function DashboardOverview() {
@@ -21,7 +22,7 @@ export function DashboardOverview() {
 
   return (
     <div className="space-y-6">
-      {isPending ? <p className="text-meta text-muted-foreground">Loading dashboard…</p> : null}
+      {isPending ? <Spinner label="Loading dashboard…" /> : null}
 
       {isError ? (
         <p role="alert" className="text-meta text-destructive">

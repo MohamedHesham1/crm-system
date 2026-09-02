@@ -6,6 +6,7 @@ import { AgentPerformanceTable } from "@/components/agent/reports/agent-performa
 import { CsatSummary } from "@/components/agent/reports/csat-summary"
 import { SlaSummaryCards } from "@/components/agent/reports/sla-summary"
 import { TicketBreakdownCharts } from "@/components/agent/reports/ticket-breakdown-charts"
+import { Spinner } from "@/components/ui/spinner"
 import { fetchReportSummary, reportKeys } from "@/lib/reports"
 
 export function ReportsOverview({ isAdmin }: { isAdmin: boolean }) {
@@ -21,7 +22,7 @@ export function ReportsOverview({ isAdmin }: { isAdmin: boolean }) {
 
   return (
     <div className="space-y-6">
-      {isPending ? <p className="text-meta text-muted-foreground">Loading reports…</p> : null}
+      {isPending ? <Spinner label="Loading reports…" /> : null}
 
       {isError ? (
         <p role="alert" className="text-meta text-destructive">

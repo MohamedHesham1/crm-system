@@ -5,6 +5,7 @@ import Link from "next/link"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { customerKeys, fetchCustomers } from "@/lib/customers"
 
@@ -17,7 +18,7 @@ export function CustomerTable() {
     placeholderData: keepPreviousData,
   })
 
-  if (isPending) return <p className="text-meta text-muted-foreground">Loading customers…</p>
+  if (isPending) return <Spinner label="Loading customers…" />
 
   if (isError) {
     return (
