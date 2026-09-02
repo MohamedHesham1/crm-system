@@ -15,3 +15,4 @@ One row per feature folder under `.squad/plans/`. `NN` continues as a global exe
 | tests | [`tests/00-overview.md`](tests/00-overview.md) | 09 |
 | design | [`design/00-overview.md`](design/00-overview.md) | 10 |
 | guardrails | [`guardrails/00-overview.md`](guardrails/00-overview.md) | 11 |
+| responsive | [`responsive/00-overview.md`](responsive/00-overview.md) | 12 |
