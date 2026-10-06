@@ -7,6 +7,7 @@ Entry point for the **customers** feature. Stories execute in order by their `NN
 | NN  | File                                                                                                                       | Title                                            | Tracker id | Depends on                                                                                                |
 | --- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | ---------- | --------------------------------------------------------------------------------------------------------- |
 | 02  | [`02-story-customer-profiles-model-api-and-management-ui.md`](02-story-customer-profiles-model-api-and-management-ui.md) | Customer profiles: model, API, and management UI | —          | [`../scaffold/01-story-next-js-ts-scaffold-prisma-auth-js-base-ui-shell.md`](../scaffold/01-story-next-js-ts-scaffold-prisma-auth-js-base-ui-shell.md) |
+| 15  | [`15-story-customer-interaction-history-and-ticket-timeline.md`](15-story-customer-interaction-history-and-ticket-timeline.md) | Customer interaction history and ticket timeline | — | Stories 05, 06, 13 |
 
 ## Dependency notes
 
@@ -23,4 +24,6 @@ Entry point for the **customers** feature. Stories execute in order by their `NN
   - **List pagination, search, and sorting controls.** The list is a plain `ORDER BY name ASC` over all rows.
   - **Customer deletion** and **customer self-service profile editing** (`app/portal/**` is untouched — profiles are agent-managed).
   - **File/attachment upload on notes** — explicitly out of scope per the intake.
+- Story 15 displays existing comments, private notes, and audit entries; it
+  depends on Story 13's server-enforced private-note visibility.
 - **Still no automated test framework.** Story 01 deferred it and Story 02's intake does not ask for it, so both ship manual + `curl` test plans. Installing Vitest (and a browser runner for end-to-end coverage) remains the open follow-up; Story 02's API test items 1–8 convert directly into integration tests once a runner exists.

@@ -7,6 +7,7 @@ Entry point for the **admin** feature. Stories execute in order by their `NN` pr
 | NN | File | Title | Tracker id | Depends on |
 |----|------|-------|------------|------------|
 | 03 | [`03-story-admin-role-elevated-permissions-and-agent-account-management.md`](03-story-admin-role-elevated-permissions-and-agent-account-management.md) | Admin role: elevated permissions and agent account management | — | [`../scaffold/01-story-next-js-ts-scaffold-prisma-auth-js-base-ui-shell.md`](../scaffold/01-story-next-js-ts-scaffold-prisma-auth-js-base-ui-shell.md), [`../customers/02-story-customer-profiles-model-api-and-management-ui.md`](../customers/02-story-customer-profiles-model-api-and-management-ui.md) |
+| 20 | [`20-story-configurable-system-settings.md`](20-story-configurable-system-settings.md) | Configurable system settings | — | Stories 03, 05, 09 |
 
 ## Dependency notes
 

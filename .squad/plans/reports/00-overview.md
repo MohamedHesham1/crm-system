@@ -7,8 +7,12 @@ Entry point for the **reports** feature. Stories execute in order by their `NN` 
 | NN | File | Title | Tracker id | Depends on |
 |----|------|-------|------------|------------|
 | 08 | [`08-story-customer-feedback-performance-reporting-and-a-management-dashboard.md`](08-story-customer-feedback-performance-reporting-and-a-management-dashboard.md) | Customer feedback, performance reporting, and a management dashboard | — | [`../scaffold/01-story-next-js-ts-scaffold-prisma-auth-js-base-ui-shell.md`](../scaffold/01-story-next-js-ts-scaffold-prisma-auth-js-base-ui-shell.md), [`../admin/03-story-admin-role-elevated-permissions-and-agent-account-management.md`](../admin/03-story-admin-role-elevated-permissions-and-agent-account-management.md), [`../registration/04-story-customer-self-registration-with-automatic-account-linking.md`](../registration/04-story-customer-self-registration-with-automatic-account-linking.md), [`../tickets/05-story-ticket-crud-self-pickup-assignment-and-comment-thread.md`](../tickets/05-story-ticket-crud-self-pickup-assignment-and-comment-thread.md), [`../dashboard/07-story-agent-dashboard-assigned-tickets-queue-and-faq.md`](../dashboard/07-story-agent-dashboard-assigned-tickets-queue-and-faq.md) |
+| 24 | [`24-story-report-export.md`](24-story-report-export.md) | Report export | — | Stories 08, 09 |
 
 ## Dependency notes
+
+- Story 24 reuses Story 08 report calculations and filters; exports must not
+  fork report queries.
 
 - **Story 08 depends on Story 01** for `lib/prisma.ts`, `auth.ts`, `app/providers.tsx`, `app/agent/layout.tsx`, `app/portal/layout.tsx`, and `components/agent/sidebar-nav.tsx`. **On Story 03** (commit `ea52bab`) for **`requireAdmin()`** (`lib/api/http.ts:19–24`) and `lib/api/client.ts`'s `request<T>()`/`ApiError`. **On Story 04** (commit `cd32c28`) for **`Customer.userId`**, which is the sole ownership check the feedback route may use. **On Story 05** (commit `ee1482f`) for the `Ticket` model, `lib/sla.ts`, `lib/ticket-access.ts`'s `resolveViewer()`, and the ticket routes it extends. **On Story 06** (commit `e148a5f`) for `requireUser()`. **On Story 07** (commit `4a732d1`) for `lib/ticket-select.ts`, and for `app/api/dashboard/route.ts` + `lib/dashboard.ts` as the structural template the reports endpoint and client module copy.
 - **This is the story that takes Story 07's deferrals.** Story 07's overview explicitly reserved *charts and aggregate reporting* and *de-duplicating `TICKET_DETAIL_SELECT`* for a later story; Story 08 is that story and does both.
