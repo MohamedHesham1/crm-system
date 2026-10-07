@@ -4,7 +4,7 @@ import type { AuditAction, NotificationType } from "@/lib/validation/notificatio
 import type { TicketPriority, TicketStatus } from "@/lib/validation/ticket"
 
 export type AuditEntry = {
-  entityType: "Ticket"
+  entityType: "Ticket" | "User"
   entityId: string
   action: AuditAction
   actorId: string

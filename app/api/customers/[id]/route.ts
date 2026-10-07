@@ -20,7 +20,7 @@ const CUSTOMER_PROFILE_INCLUDE = {
 }
 
 export const GET = withAuth(
-  { role: "agent" },
+  { role: "agent", permission: "CUSTOMERS_READ" },
   async (_request, ctx: RouteContext<"/api/customers/[id]">) => {
     const { id } = await ctx.params
 
@@ -35,7 +35,7 @@ export const GET = withAuth(
 )
 
 export const PATCH = withAuth(
-  { role: "agent" },
+  { role: "agent", permission: "CUSTOMERS_MANAGE" },
   async (request, ctx: RouteContext<"/api/customers/[id]">) => {
     const { id } = await ctx.params
 

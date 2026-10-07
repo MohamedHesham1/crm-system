@@ -34,7 +34,9 @@ export function DashboardOverview() {
       {!isPending && !isError ? (
         <>
           <SummaryCards summary={data} />
-          <TaskOverview upcoming={data.tasks.upcoming} overdue={data.tasks.overdue} />
+          {data.tasks ? (
+            <TaskOverview upcoming={data.tasks.upcoming} overdue={data.tasks.overdue} />
+          ) : null}
           <h2 className="text-title">Assigned to me</h2>
           <AssignedTicketList tickets={data.tickets} />
         </>

@@ -7,7 +7,7 @@ import { NOT_DELETED } from "@/lib/ticket-access"
 
 /** Takes no request body. Exists only so "reopen" is a distinct action, not a status value PATCH happens to accept. */
 export const POST = withAuth(
-  { role: "viewer" },
+  { role: "viewer", permission: "TICKETS_MANAGE" },
   async (_request, ctx: RouteContext<"/api/tickets/[id]/reopen">, viewer) => {
     if (viewer.kind !== "staff") {
       return Response.json({ error: "Forbidden" }, { status: 403 })

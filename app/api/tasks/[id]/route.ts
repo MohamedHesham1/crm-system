@@ -59,7 +59,7 @@ async function validateLinks(ticketId: string | null, customerId: string | null)
 }
 
 export const GET = withAuth(
-  { role: "agent" },
+  { role: "agent", permission: "TASKS_MANAGE" },
   async (_request, ctx: { params: Promise<{ id: string }> }, user) => {
     const { id } = await ctx.params
     const task = await prisma.task.findFirst({
@@ -72,7 +72,7 @@ export const GET = withAuth(
 )
 
 export const PATCH = withAuth(
-  { role: "agent" },
+  { role: "agent", permission: "TASKS_MANAGE" },
   async (request, ctx: { params: Promise<{ id: string }> }, user) => {
     const { id } = await ctx.params
     const current = await prisma.task.findFirst({
@@ -162,7 +162,7 @@ export const PATCH = withAuth(
 )
 
 export const DELETE = withAuth(
-  { role: "agent" },
+  { role: "agent", permission: "TASKS_MANAGE" },
   async (_request, ctx: { params: Promise<{ id: string }> }, user) => {
     const { id } = await ctx.params
     const task = await prisma.task.findFirst({

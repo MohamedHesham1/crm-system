@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 
 import { Spinner } from "@/components/ui/spinner"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { PermissionEditor } from "@/components/agent/admin/permission-editor"
 import { fetchUsers, userKeys } from "@/lib/users"
 
 export function UserTable() {
@@ -29,6 +30,7 @@ export function UserTable() {
           <TableHead>Name</TableHead>
           <TableHead>Email</TableHead>
           <TableHead>Role</TableHead>
+          <TableHead>Permissions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -37,6 +39,9 @@ export function UserTable() {
             <TableCell className="font-medium">{user.name}</TableCell>
             <TableCell className="text-muted-foreground">{user.email}</TableCell>
             <TableCell className="text-muted-foreground">{user.role}</TableCell>
+            <TableCell>
+              {user.role === "AGENT" ? <PermissionEditor userId={user.id} /> : "—"}
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>

@@ -10,7 +10,7 @@ import { authorizeAssignmentChange, NOT_DELETED, ticketScopeWhere } from "@/lib/
 import { updateTicketSchema, type TicketPriority, type TicketStatus } from "@/lib/validation/ticket"
 
 export const GET = withAuth(
-  { role: "viewer" },
+  { role: "viewer", permission: "TICKETS_READ" },
   async (_request, ctx: RouteContext<"/api/tickets/[id]">, viewer) => {
     const { id } = await ctx.params
 
@@ -31,7 +31,7 @@ export const GET = withAuth(
 )
 
 export const PATCH = withAuth(
-  { role: "viewer" },
+  { role: "viewer", permission: "TICKETS_MANAGE" },
   async (request, ctx: RouteContext<"/api/tickets/[id]">, viewer) => {
     if (viewer.kind !== "staff") {
       return Response.json({ error: "Forbidden" }, { status: 403 })
@@ -164,7 +164,7 @@ export const PATCH = withAuth(
 )
 
 export const DELETE = withAuth(
-  { role: "admin" },
+  { role: "admin", permission: "TICKETS_MANAGE" },
   async (_request, ctx: RouteContext<"/api/tickets/[id]">, admin) => {
     const { id } = await ctx.params
 

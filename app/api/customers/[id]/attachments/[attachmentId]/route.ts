@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma"
 import { notFound, withAuth } from "@/lib/api/http"
 
 export const GET = withAuth(
-  { role: "agent" },
+  { role: "agent", permission: "CUSTOMERS_READ" },
   async (
     _request,
     ctx: { params: Promise<{ id: string; attachmentId: string }> },
@@ -31,7 +31,7 @@ export const GET = withAuth(
 )
 
 export const DELETE = withAuth(
-  { role: "agent" },
+  { role: "agent", permission: "CUSTOMERS_MANAGE" },
   async (
     _request,
     ctx: { params: Promise<{ id: string; attachmentId: string }> },

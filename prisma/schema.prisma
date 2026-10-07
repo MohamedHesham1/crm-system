@@ -33,6 +33,25 @@ model User {
   auditLogs           AuditLog[]
   notifications       Notification[]
   knowledgeArticles   KnowledgeArticle[]
+  permissionGrantsReceived UserPermission[] @relation("PermissionSubject")
+  permissionGrantsMade     UserPermission[] @relation("PermissionActor")
+}
+
+/// Per-user override for one staff capability. Missing rows inherit the
+/// role's documented defaults; CUSTOMER accounts never receive grants.
+model UserPermission {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation("PermissionSubject", fields: [userId], references: [id], onDelete: Cascade)
+  permission   String
+  granted      Boolean
+  actorId      String
+  actor        User     @relation("PermissionActor", fields: [actorId], references: [id], onDelete: Restrict)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, permission])
+  @@index([actorId])
 }
 
 /// Customer profiles are agent-managed. `notes` is free text (SQLite maps
@@ -229,8 +248,8 @@ model Task {
 /// `lib/activity.ts`, always on the same transaction as the change it records.
 model AuditLog {
   id         String   @id @default(cuid())
-  /// Currently always "Ticket". A String, not an enum, so a later story can
-  /// log Customer or User changes without a migration.
+  /// Entity type is a String, not an enum, so audit coverage can expand without
+  /// a migration.
   entityType String
   /// **Deliberately not a foreign key.** `DELETE /api/tickets/[id]` exists
   /// (`app/api/tickets/[id]/route.ts:123`), and the record that a ticket was

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { notFound, withAuth } from "@/lib/api/http"
 
 export const GET = withAuth(
-  { role: "agent" },
+  { role: "agent", permission: "CUSTOMERS_READ" },
   async (_request, ctx: { params: Promise<{ id: string }> }) => {
     const { id } = await ctx.params
     const customer = await prisma.customer.findUnique({ where: { id }, select: { id: true } })
@@ -20,7 +20,7 @@ export const GET = withAuth(
 )
 
 export const POST = withAuth(
-  { role: "agent" },
+  { role: "agent", permission: "CUSTOMERS_MANAGE" },
   async (request, ctx: { params: Promise<{ id: string }> }, viewer) => {
     const { id } = await ctx.params
     const customer = await prisma.customer.findUnique({ where: { id }, select: { id: true } })

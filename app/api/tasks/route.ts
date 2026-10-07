@@ -73,7 +73,7 @@ async function staffOwner(ownerId: string): Promise<{ id: string } | null> {
   return owner && isRole(owner.role) && isStaff(owner.role) ? { id: owner.id } : null
 }
 
-export const GET = withAuth({ role: "agent" }, async (request, _ctx, user) => {
+export const GET = withAuth({ role: "agent", permission: "TASKS_MANAGE" }, async (request, _ctx, user) => {
   const query = new URL(request.url).searchParams
   const requestedOwner = query.get("ownerId")
   let ownerWhere: { ownerId?: string } = { ownerId: user.id }
@@ -119,7 +119,7 @@ export const GET = withAuth({ role: "agent" }, async (request, _ctx, user) => {
   return Response.json({ upcoming, overdue, completed })
 })
 
-export const POST = withAuth({ role: "agent" }, async (request, _ctx, user) => {
+export const POST = withAuth({ role: "agent", permission: "TASKS_MANAGE" }, async (request, _ctx, user) => {
   const body = await readJson(request)
   if (!body.ok) return body.response
   const parsed = createTaskSchema.safeParse(body.data)

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { withAuth } from "@/lib/api/http"
 import { isStaff } from "@/lib/roles"
+import { hasPermission } from "@/lib/permissions"
 import { isSlaBreached, liveStatusWhere, slaBreachedWhere } from "@/lib/sla"
 import { NOT_DELETED } from "@/lib/ticket-access"
 import { TASK_SELECT } from "@/lib/task-select"
@@ -22,6 +23,9 @@ export const GET = withAuth({ role: "user" }, async (_request, _ctx, user) => {
   // because there is no customer-shaped reading of "the unassigned agent
   // queue".
   if (!isStaff(user.role)) return Response.json({ error: "Forbidden" }, { status: 403 })
+  if (!(await hasPermission(user, "TICKETS_READ"))) {
+    return Response.json({ error: "Forbidden" }, { status: 403 })
+  }
 
   // One `now` for all five queries. Computing it per-query lets a slow request
   // count a ticket as breached in one number and not in the next.
@@ -29,8 +33,7 @@ export const GET = withAuth({ role: "user" }, async (_request, _ctx, user) => {
   const mine = { ...NOT_DELETED, assignedAgentId: user.id }
   const queue = { ...NOT_DELETED, assignedAgentId: null }
 
-  const [byStatusRows, assignedBreached, queueUnassigned, queueBreached, tickets, upcomingTasks, overdueTasks] =
-    await Promise.all([
+  const ticketDataPromise = Promise.all([
       prisma.ticket.groupBy({
         by: ["status"],
         where: mine,
@@ -45,23 +48,33 @@ export const GET = withAuth({ role: "user" }, async (_request, _ctx, user) => {
         take: DASHBOARD_TICKET_LIMIT,
         select: TICKET_LIST_SELECT,
       }),
-      prisma.task.findMany({
-        where: {
-          ownerId: user.id,
-          completedAt: null,
-          OR: [{ dueAt: null }, { dueAt: { gt: now } }],
-        },
-        orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
-        take: 5,
-        select: TASK_SELECT,
-      }),
-      prisma.task.findMany({
-        where: { ownerId: user.id, completedAt: null, dueAt: { lte: now } },
-        orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
-        take: 5,
-        select: TASK_SELECT,
-      }),
     ])
+  const taskDataPromise = hasPermission(user, "TASKS_MANAGE").then((allowed) =>
+    allowed
+      ? Promise.all([
+          prisma.task.findMany({
+            where: {
+              ownerId: user.id,
+              completedAt: null,
+              OR: [{ dueAt: null }, { dueAt: { gt: now } }],
+            },
+            orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
+            take: 5,
+            select: TASK_SELECT,
+          }),
+          prisma.task.findMany({
+            where: { ownerId: user.id, completedAt: null, dueAt: { lte: now } },
+            orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
+            take: 5,
+            select: TASK_SELECT,
+          }),
+        ])
+      : null,
+  )
+  const [
+    [byStatusRows, assignedBreached, queueUnassigned, queueBreached, tickets],
+    taskData,
+  ] = await Promise.all([ticketDataPromise, taskDataPromise])
 
   // Zero-fill. `groupBy` returns a row only for statuses that actually occur;
   // the UI renders one tile per status and must show `0`, not a gap.
@@ -81,6 +94,6 @@ export const GET = withAuth({ role: "user" }, async (_request, _ctx, user) => {
     assigned: { total, byStatus, breached: assignedBreached },
     queue: { unassigned: queueUnassigned, breached: queueBreached },
     tickets: tickets.map((ticket) => ({ ...ticket, slaBreached: isSlaBreached(ticket, now) })),
-    tasks: { upcoming: upcomingTasks, overdue: overdueTasks },
+    tasks: taskData ? { upcoming: taskData[0], overdue: taskData[1] } : null,
   })
 })

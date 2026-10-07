@@ -5,7 +5,7 @@ import { readJson, validationError, withAuth } from "@/lib/api/http"
 import { parsePagination } from "@/lib/api/pagination"
 import { createCustomerSchema } from "@/lib/validation/customer"
 
-export const GET = withAuth({ role: "agent" }, async (request) => {
+export const GET = withAuth({ role: "agent", permission: "CUSTOMERS_READ" }, async (request) => {
   const { page, pageSize, skip, take } = parsePagination(request)
   const where = {}
 
@@ -23,7 +23,7 @@ export const GET = withAuth({ role: "agent" }, async (request) => {
   return Response.json({ customers, total, page, pageSize })
 })
 
-export const POST = withAuth({ role: "agent" }, async (request) => {
+export const POST = withAuth({ role: "agent", permission: "CUSTOMERS_MANAGE" }, async (request) => {
   const body = await readJson(request)
   if (!body.ok) return body.response
 

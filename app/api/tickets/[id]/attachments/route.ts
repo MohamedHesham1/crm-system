@@ -5,7 +5,7 @@ import { notFound, withAuth } from "@/lib/api/http"
 import { ticketScopeWhere } from "@/lib/ticket-access"
 
 export const GET = withAuth(
-  { role: "viewer" },
+  { role: "viewer", permission: "TICKETS_READ" },
   async (_request, ctx: { params: Promise<{ id: string }> }, viewer) => {
     const { id } = await ctx.params
     const ticket = await prisma.ticket.findFirst({
@@ -24,7 +24,7 @@ export const GET = withAuth(
 )
 
 export const POST = withAuth(
-  { role: "viewer" },
+  { role: "viewer", permission: "TICKETS_MANAGE" },
   async (request, ctx: { params: Promise<{ id: string }> }, viewer) => {
     const { id } = await ctx.params
     const ticket = await prisma.ticket.findFirst({

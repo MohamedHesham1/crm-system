@@ -9,7 +9,7 @@ import { notFound, withAuth } from "@/lib/api/http"
 import { ticketScopeWhere } from "@/lib/ticket-access"
 
 export const GET = withAuth(
-  { role: "viewer" },
+  { role: "viewer", permission: "TICKETS_READ" },
   async (
     _request,
     ctx: { params: Promise<{ id: string; attachmentId: string }> },
@@ -37,7 +37,7 @@ export const GET = withAuth(
 )
 
 export const DELETE = withAuth(
-  { role: "viewer" },
+  { role: "viewer", permission: "TICKETS_MANAGE" },
   async (
     _request,
     ctx: { params: Promise<{ id: string; attachmentId: string }> },

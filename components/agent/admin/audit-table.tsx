@@ -72,7 +72,7 @@ export function AuditTable() {
               <TableHead>Action</TableHead>
               <TableHead>Detail</TableHead>
               <TableHead>Actor</TableHead>
-              <TableHead>Ticket</TableHead>
+              <TableHead>Record</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -87,13 +87,21 @@ export function AuditTable() {
                 <TableCell>{log.detail}</TableCell>
                 <TableCell className="text-muted-foreground">{log.actor.name}</TableCell>
                 <TableCell className="text-muted-foreground">
-                  {knownTicketIds.has(log.entityId) ? (
-                    <Link href={`/agent/tickets/${log.entityId}`} className="hover:underline">
-                      Open
-                    </Link>
-                  ) : (
-                    "deleted"
-                  )}
+                  {log.entityType === "Ticket"
+                    ? knownTicketIds.has(log.entityId) ? (
+                        <Link href={`/agent/tickets/${log.entityId}`} className="hover:underline">
+                          Open ticket
+                        </Link>
+                      ) : (
+                        "Deleted ticket"
+                      )
+                    : log.entityType === "User"
+                      ? (
+                          <Link href="/agent/admin/users" className="hover:underline">
+                            User account
+                          </Link>
+                        )
+                      : log.entityType}
                 </TableCell>
               </TableRow>
             ))}

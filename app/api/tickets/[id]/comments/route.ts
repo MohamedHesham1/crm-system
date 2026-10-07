@@ -39,7 +39,7 @@ async function loadScopedTicket(viewer: Viewer, id: string) {
 }
 
 export const GET = withAuth(
-  { role: "viewer" },
+  { role: "viewer", permission: "TICKETS_READ" },
   async (_request, ctx: RouteContext<"/api/tickets/[id]/comments">, viewer) => {
     const { id } = await ctx.params
     const scoped = await loadScopedTicket(viewer, id)
@@ -59,7 +59,7 @@ export const GET = withAuth(
 )
 
 export const POST = withAuth(
-  { role: "viewer" },
+  { role: "viewer", permission: "TICKETS_MANAGE" },
   async (request, ctx: RouteContext<"/api/tickets/[id]/comments">, viewer) => {
     const { id } = await ctx.params
     const scoped = await loadScopedTicket(viewer, id)

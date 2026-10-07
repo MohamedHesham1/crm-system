@@ -22,7 +22,7 @@ export type DashboardSummary = {
     breached: number
   }
   tickets: TicketListItem[]
-  tasks: { upcoming: TaskItem[]; overdue: TaskItem[] }
+  tasks: { upcoming: TaskItem[]; overdue: TaskItem[] } | null
 }
 
 export const dashboardKeys = {

@@ -3,6 +3,7 @@ import { z, type ZodError } from "zod"
 import { auth } from "@/auth"
 import { checkRateLimit, clientIp, recordAttempt, type RateLimitRule } from "@/lib/rate-limit"
 import { isStaff, type Role } from "@/lib/roles"
+import { hasPermission, type Permission } from "@/lib/permissions"
 import { resolveViewer, type Viewer } from "@/lib/ticket-access"
 
 /**
@@ -83,6 +84,8 @@ export type AuthOptions<R extends AuthRole> = {
    * greppable declaration — not the absence of one.
    */
   role: R
+  /** Optional staff capability. Customer viewers retain their existing portal access. */
+  permission?: Permission
   /** Per-IP throttle, applied before the role check and before any database work. */
   rateLimit?: RateLimitRule
 }
@@ -121,6 +124,13 @@ export function withAuth<R extends AuthRole, C = unknown>(
     if (options.role === "viewer") {
       const resolved = await resolveViewer()
       if (!resolved.ok) return resolved.response
+      if (
+        options.permission &&
+        resolved.viewer.kind === "staff" &&
+        !(await hasPermission(resolved.viewer, options.permission))
+      ) {
+        return Response.json({ error: "Forbidden" }, { status: 403 })
+      }
       return handler(req, ctx as C, resolved.viewer as AuthPayloads[R])
     }
 
@@ -137,6 +147,9 @@ export function withAuth<R extends AuthRole, C = unknown>(
     // `auth()` call on staff routes; see the plan's Edge Cases.
     const identity = await requireUser()
     if (!identity.ok) return identity.response
+    if (options.permission && !(await hasPermission(identity.user, options.permission))) {
+      return Response.json({ error: "Forbidden" }, { status: 403 })
+    }
     return handler(req, ctx as C, identity.user as AuthPayloads[R])
   }
 }

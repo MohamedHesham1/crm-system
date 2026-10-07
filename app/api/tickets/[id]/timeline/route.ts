@@ -3,7 +3,7 @@ import { notFound, withAuth } from "@/lib/api/http"
 import { NOT_DELETED } from "@/lib/ticket-access"
 
 export const GET = withAuth(
-  { role: "agent" },
+  { role: "agent", permission: "TICKETS_READ" },
   async (_request, ctx: { params: Promise<{ id: string }> }) => {
     const { id } = await ctx.params
     const ticket = await prisma.ticket.findFirst({

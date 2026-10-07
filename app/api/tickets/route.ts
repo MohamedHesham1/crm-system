@@ -15,7 +15,7 @@ import {
   type TicketStatus,
 } from "@/lib/validation/ticket"
 
-export const GET = withAuth({ role: "viewer" }, async (request, _ctx, viewer) => {
+export const GET = withAuth({ role: "viewer", permission: "TICKETS_READ" }, async (request, _ctx, viewer) => {
   const searchParams = new URL(request.url).searchParams
   const status = searchParams.get("status")
   const priority = searchParams.get("priority")
@@ -53,7 +53,7 @@ export const GET = withAuth({ role: "viewer" }, async (request, _ctx, viewer) =>
   })
 })
 
-export const POST = withAuth({ role: "viewer" }, async (request, _ctx, viewer) => {
+export const POST = withAuth({ role: "viewer", permission: "TICKETS_MANAGE" }, async (request, _ctx, viewer) => {
   if (viewer.kind === "orphan") {
     return Response.json(
       { error: "No customer profile is linked to this account." },
