@@ -77,9 +77,10 @@ export const createCommentSchema = z.object({
     .trim()
     .min(1, "Write a comment before posting.")
     .max(10_000, "Comment must be 10,000 characters or fewer."),
+  isInternal: z.boolean().optional().default(false),
 })
 
 export type CreateTicketInput = z.infer<typeof createTicketSchema>
 export type CreatePortalTicketInput = z.infer<typeof createPortalTicketSchema>
 export type UpdateTicketInput = z.infer<typeof updateTicketSchema>
-export type CreateCommentInput = z.infer<typeof createCommentSchema>
+export type CreateCommentInput = z.input<typeof createCommentSchema>

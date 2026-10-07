@@ -45,7 +45,7 @@ export function PortalTicketDetail({ ticketId }: { ticketId: string }) {
         <FeedbackForm ticketId={ticketId} feedback={data.feedback} />
       ) : null}
 
-      <CommentThread ticketId={ticketId} />
+      <CommentThread ticketId={ticketId} canWriteInternalNotes={false} />
     </div>
   )
 }

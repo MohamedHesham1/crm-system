@@ -43,6 +43,7 @@ export const TICKET_DETAIL_SELECT = {
     select: {
       id: true,
       body: true,
+      isInternal: true,
       createdAt: true,
       author: { select: { id: true, name: true, role: true } },
     },

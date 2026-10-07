@@ -7,6 +7,7 @@ import { createCommentSchema } from "@/lib/validation/ticket"
 const COMMENT_SELECT = {
   id: true,
   body: true,
+  isInternal: true,
   createdAt: true,
   author: { select: { id: true, name: true, role: true } },
 } as const
@@ -30,7 +31,10 @@ export const GET = withAuth(
     if (!scoped.ok) return scoped.response
 
     const comments = await prisma.comment.findMany({
-      where: { ticketId: id },
+      where: {
+        ticketId: id,
+        ...(viewer.kind === "customer" ? { isInternal: false } : {}),
+      },
       orderBy: { createdAt: "asc" },
       select: COMMENT_SELECT,
     })
@@ -51,10 +55,18 @@ export const POST = withAuth(
 
     const parsed = createCommentSchema.safeParse(body.data)
     if (!parsed.success) return validationError(parsed.error)
+    if (viewer.kind !== "staff" && parsed.data.isInternal) {
+      return Response.json({ error: "Customers cannot create internal notes." }, { status: 403 })
+    }
 
     const comment = await prisma.$transaction(async (tx) => {
       const created = await tx.comment.create({
-        data: { ticketId: id, authorId: viewer.id, body: parsed.data.body },
+        data: {
+          ticketId: id,
+          authorId: viewer.id,
+          body: parsed.data.body,
+          isInternal: parsed.data.isInternal,
+        },
         select: COMMENT_SELECT,
       })
 

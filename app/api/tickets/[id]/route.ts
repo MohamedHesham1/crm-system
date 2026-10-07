@@ -16,7 +16,13 @@ export const GET = withAuth(
 
     const ticket = await prisma.ticket.findFirst({
       where: { id, ...ticketScopeWhere(viewer) },
-      select: TICKET_DETAIL_SELECT,
+      select: {
+        ...TICKET_DETAIL_SELECT,
+        comments: {
+          ...TICKET_DETAIL_SELECT.comments,
+          where: viewer.kind === "customer" ? { isInternal: false } : {},
+        },
+      },
     })
     if (!ticket) return notFound("Ticket not found.")
 

@@ -34,6 +34,7 @@ export type TicketListItem = {
 export type TicketComment = {
   id: string
   body: string
+  isInternal: boolean
   createdAt: string
   author: { id: string; name: string; role: Role }
 }

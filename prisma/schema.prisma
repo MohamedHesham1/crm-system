@@ -149,6 +149,7 @@ model Comment {
   author    User     @relation(fields: [authorId], references: [id], onDelete: Restrict)
 
   body      String
+  isInternal Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

@@ -222,7 +222,7 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
         </p>
       ) : null}
 
-      <CommentThread ticketId={ticketId} />
+      <CommentThread ticketId={ticketId} canWriteInternalNotes />
     </div>
   )
 }
