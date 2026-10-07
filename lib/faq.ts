@@ -1,6 +1,6 @@
 /**
- * Short answers to common portal questions. Keep the SLA figures aligned with
- * `SLA_HOURS` in `lib/sla.ts`; longer, searchable guides live in the knowledge base.
+ * Short answers to common portal questions. Longer, searchable guides live in
+ * the knowledge base.
  */
 export type FaqEntry = { question: string; answer: string }
 
@@ -13,7 +13,7 @@ export const FAQ_ENTRIES: readonly FaqEntry[] = [
   {
     question: "How quickly will someone respond?",
     answer:
-      "Target response times are 4 hours for HIGH priority, 24 hours for MEDIUM and 72 hours for LOW, measured from when the ticket is created. Tickets past their target are flagged to our agents automatically.",
+      "Our team sets response and resolution targets by priority. Tickets past their resolution target are flagged to our agents automatically.",
   },
   {
     question: "What do the ticket statuses mean?",

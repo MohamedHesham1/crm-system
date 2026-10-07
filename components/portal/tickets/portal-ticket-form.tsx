@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { z } from "zod"
 
 import { Button } from "@/components/ui/button"
@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { ApiError, createPortalTicket, ticketKeys, type FieldErrors } from "@/lib/tickets"
+import { fetchTicketCategories, ticketSettingsKeys } from "@/lib/settings"
 import { createPortalTicketSchema, TICKET_PRIORITIES, type TicketPriority } from "@/lib/validation/ticket"
 
 type Values = {
@@ -28,6 +29,11 @@ export function PortalTicketForm() {
 
   const queryClient = useQueryClient()
   const router = useRouter()
+  const categoryQuery = useQuery({
+    queryKey: ticketSettingsKeys.categories(),
+    queryFn: fetchTicketCategories,
+  })
+  const categories = categoryQuery.data ?? []
 
   const mutation = useMutation({
     mutationFn: createPortalTicket,
@@ -95,13 +101,29 @@ export function PortalTicketForm() {
 
       <div className="space-y-2">
         <Label htmlFor="category">Category</Label>
-        <Input
-          id="category"
-          name="category"
-          value={values.category}
-          onChange={(event) => setValues((prev) => ({ ...prev, category: event.target.value }))}
-          aria-invalid={Boolean(fieldErrors.category)}
-        />
+        {categoryQuery.isError ? (
+          <p role="alert" className="text-meta text-destructive">Could not load ticket categories.</p>
+        ) : (
+          <Select
+            value={values.category}
+            onValueChange={(category) => setValues((prev) => ({ ...prev, category }))}
+            disabled={categoryQuery.isPending || categories.length === 0}
+          >
+            <SelectTrigger id="category" className="w-full" aria-invalid={Boolean(fieldErrors.category)}>
+              <SelectValue placeholder={categoryQuery.isPending ? "Loading categories…" : "Choose a category"} />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={category.name}>{category.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+        {categories.length === 0 && !categoryQuery.isPending && !categoryQuery.isError ? (
+          <p role="alert" className="text-meta text-destructive">
+            No ticket categories are active. Ask an admin to activate one.
+          </p>
+        ) : null}
         {fieldErrors.category ? (
           <p role="alert" className="text-meta text-destructive">
             {fieldErrors.category[0]}
@@ -134,7 +156,7 @@ export function PortalTicketForm() {
         </p>
       ) : null}
 
-      <Button type="submit" className="w-full" disabled={mutation.isPending}>
+      <Button type="submit" className="w-full" disabled={mutation.isPending || !values.category || categoryQuery.isPending || categoryQuery.isError}>
         {mutation.isPending ? "Creating…" : "Create ticket"}
       </Button>
     </form>

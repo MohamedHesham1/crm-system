@@ -20,7 +20,7 @@ export function SlaSummaryCards({
             {sla.onTimeRate === null ? "—" : `${Math.round(sla.onTimeRate * 100)}%`}
           </span>
           <p className="text-label uppercase text-muted-foreground">
-            {sla.onTime} of {sla.measured} tickets with an SLA target
+            {sla.onTime} of {sla.measured} tickets with a resolution target
           </p>
         </CardContent>
       </Card>

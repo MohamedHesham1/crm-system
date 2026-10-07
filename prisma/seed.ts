@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client"
 import bcrypt from "bcryptjs"
 
 import { defaultDueAt } from "@/lib/sla"
+import { DEFAULT_SLA_TARGETS, DEFAULT_TICKET_CATEGORY } from "@/lib/validation/settings"
 
 const prisma = new PrismaClient()
 
@@ -20,6 +21,19 @@ async function main() {
       role: "AGENT",
     },
   })
+
+  await prisma.ticketCategory.upsert({
+    where: { id: DEFAULT_TICKET_CATEGORY.id },
+    update: {},
+    create: { ...DEFAULT_TICKET_CATEGORY },
+  })
+  for (const target of Object.values(DEFAULT_SLA_TARGETS)) {
+    await prisma.slaTarget.upsert({
+      where: { priority: target.priority },
+      update: {},
+      create: target,
+    })
+  }
 
   const customerUser = await prisma.user.upsert({
     where: { email: "customer@crm.local" },
@@ -101,6 +115,10 @@ async function main() {
       select: { id: true },
     })
     if (!existingTicket) {
+      const mediumTarget = await prisma.slaTarget.findUnique({
+        where: { priority: "MEDIUM" },
+        select: { resolutionHours: true },
+      })
       await prisma.ticket.create({
         data: {
           subject: SEED_TICKET_SUBJECT,
@@ -110,7 +128,7 @@ async function main() {
           status: "OPEN",
           customerId: linkedCustomer.id,
           assignedAgentId: null,
-          dueAt: defaultDueAt("MEDIUM"),
+          dueAt: defaultDueAt("MEDIUM", new Date(), mediumTarget?.resolutionHours),
         },
       })
     }

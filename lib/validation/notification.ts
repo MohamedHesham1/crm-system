@@ -16,6 +16,7 @@ export const AUDIT_ACTIONS = [
   "REASSIGNED",
   "REOPENED",
   "TICKET_DELETED",
+  "SETTINGS_CHANGED",
 ] as const
 
 export const NOTIFICATION_TYPES = [

@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { customerKeys, fetchCustomers } from "@/lib/customers"
 import { ApiError, createTicket, ticketKeys, type FieldErrors } from "@/lib/tickets"
+import { fetchTicketCategories, ticketSettingsKeys } from "@/lib/settings"
 import { createTicketSchema, TICKET_PRIORITIES, type TicketPriority } from "@/lib/validation/ticket"
 
 type Values = {
@@ -49,6 +50,11 @@ export function TicketForm() {
     queryFn: () => fetchCustomers(1, 100),
   })
   const customers = customerPage?.items
+  const categoryQuery = useQuery({
+    queryKey: ticketSettingsKeys.categories(),
+    queryFn: fetchTicketCategories,
+  })
+  const categories = categoryQuery.data ?? []
 
   const mutation = useMutation({
     mutationFn: createTicket,
@@ -131,13 +137,29 @@ export function TicketForm() {
 
       <div className="space-y-2">
         <Label htmlFor="category">Category</Label>
-        <Input
-          id="category"
-          name="category"
-          value={values.category}
-          onChange={(event) => setValues((prev) => ({ ...prev, category: event.target.value }))}
-          aria-invalid={Boolean(fieldErrors.category)}
-        />
+        {categoryQuery.isError ? (
+          <p role="alert" className="text-meta text-destructive">Could not load ticket categories.</p>
+        ) : (
+          <Select
+            value={values.category}
+            onValueChange={(category) => setValues((prev) => ({ ...prev, category }))}
+            disabled={categoryQuery.isPending || categories.length === 0}
+          >
+            <SelectTrigger id="category" className="w-full" aria-invalid={Boolean(fieldErrors.category)}>
+              <SelectValue placeholder={categoryQuery.isPending ? "Loading categories…" : "Choose a category"} />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={category.name}>{category.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+        {categories.length === 0 && !categoryQuery.isPending && !categoryQuery.isError ? (
+          <p role="alert" className="text-meta text-destructive">
+            No ticket categories are active. Ask an admin to activate one.
+          </p>
+        ) : null}
         {fieldErrors.category ? (
           <p role="alert" className="text-meta text-destructive">
             {fieldErrors.category[0]}
@@ -234,7 +256,7 @@ export function TicketForm() {
       <Button
         type="submit"
         className="w-full"
-        disabled={mutation.isPending || noCustomers || !values.customerId}
+        disabled={mutation.isPending || noCustomers || !values.customerId || !values.category || categoryQuery.isPending || categoryQuery.isError}
       >
         {mutation.isPending ? "Creating…" : "Create ticket"}
       </Button>

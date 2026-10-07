@@ -1,26 +1,19 @@
 import type { TicketPriority, TicketStatus } from "@/lib/validation/ticket"
+import { DEFAULT_SLA_TARGETS } from "@/lib/validation/settings"
 
 /** Statuses that stop the SLA clock. A resolved ticket can never breach. */
 export const TERMINAL_STATUSES: readonly TicketStatus[] = ["RESOLVED", "CLOSED"]
 
 /**
- * Hours from creation to `dueAt`, per priority. Applied only when the reporter
- * did not supply an explicit `dueAt`.
- *
- * These numbers are a product decision made in this story, not something the
- * acceptance criteria fixed: the criteria require `dueAt` to be nullable and
- * require the sweep to act on "SLA window more than half elapsed", which is
- * unreachable if `dueAt` is always null. Change the table freely; do not move
- * it into the database.
+ * `dueAt` is the resolution deadline. Callers with access to settings pass
+ * configured resolution hours; the defaults keep seed and legacy callers safe.
  */
-export const SLA_HOURS: Record<TicketPriority, number> = {
-  HIGH: 4,
-  MEDIUM: 24,
-  LOW: 72,
-}
-
-export function defaultDueAt(priority: TicketPriority, from: Date = new Date()): Date {
-  return new Date(from.getTime() + SLA_HOURS[priority] * 60 * 60 * 1000)
+export function defaultDueAt(
+  priority: TicketPriority,
+  from: Date = new Date(),
+  resolutionHours = DEFAULT_SLA_TARGETS[priority].resolutionHours,
+): Date {
+  return new Date(from.getTime() + resolutionHours * 60 * 60 * 1000)
 }
 
 /**

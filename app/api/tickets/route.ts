@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { notFound, readJson, validationError, withAuth } from "@/lib/api/http"
 import { parsePagination } from "@/lib/api/pagination"
 import { defaultDueAt, isSlaBreached } from "@/lib/sla"
+import { getActiveTicketCategories, getResolutionTargetHours } from "@/lib/settings"
 import { TICKET_LIST_SELECT } from "@/lib/ticket-select"
 import { ticketScopeWhere } from "@/lib/ticket-access"
 import {
@@ -69,17 +70,11 @@ export const POST = withAuth({ role: "viewer" }, async (request, _ctx, viewer) =
   let description: string
   let category: string
   let priority: TicketPriority
-  let dueAt: Date
+  let explicitDueAt: Date | null = null
 
   if (viewer.kind === "staff") {
     const parsed = createTicketSchema.safeParse(body.data)
     if (!parsed.success) return validationError(parsed.error)
-
-    const customer = await prisma.customer.findUnique({
-      where: { id: parsed.data.customerId },
-      select: { id: true },
-    })
-    if (!customer) return notFound("Customer not found.")
 
     customerId = parsed.data.customerId
     assignedAgentId = parsed.data.assignToMe ? viewer.id : null
@@ -87,7 +82,7 @@ export const POST = withAuth({ role: "viewer" }, async (request, _ctx, viewer) =
     description = parsed.data.description
     category = parsed.data.category
     priority = parsed.data.priority
-    dueAt = parsed.data.dueAt ? new Date(parsed.data.dueAt) : defaultDueAt(priority)
+    explicitDueAt = parsed.data.dueAt ? new Date(parsed.data.dueAt) : null
   } else {
     const parsed = createPortalTicketSchema.safeParse(body.data)
     if (!parsed.success) return validationError(parsed.error)
@@ -98,8 +93,35 @@ export const POST = withAuth({ role: "viewer" }, async (request, _ctx, viewer) =
     description = parsed.data.description
     category = parsed.data.category
     priority = parsed.data.priority
-    dueAt = defaultDueAt(priority)
   }
+
+  const [categories, resolutionHours, customer] = await Promise.all([
+    getActiveTicketCategories(),
+    getResolutionTargetHours(priority),
+    viewer.kind === "staff"
+      ? prisma.customer.findUnique({
+          where: { id: customerId },
+          select: { id: true },
+        })
+      : Promise.resolve({ id: customerId }),
+  ])
+  if (!customer) return notFound("Customer not found.")
+
+  const normalizedCategory = category.trim().toLowerCase()
+  const selectedCategory = categories.find(
+    (candidate) => candidate.normalizedName === normalizedCategory,
+  )
+  if (!selectedCategory) {
+    return Response.json(
+      {
+        error: "Validation failed",
+        fieldErrors: { category: ["Choose an active ticket category."] },
+      },
+      { status: 400 },
+    )
+  }
+  category = selectedCategory.name
+  const dueAt = explicitDueAt ?? defaultDueAt(priority, new Date(), resolutionHours)
 
   const ticket = await prisma.$transaction(async (tx) => {
     const created = await tx.ticket.create({

@@ -83,9 +83,9 @@ model Ticket {
   assignedAgentId String?
   assignedAgent   User?     @relation(fields: [assignedAgentId], references: [id], onDelete: SetNull)
 
-  /// SLA deadline. Nullable: a ticket with no `dueAt` can never breach and is
-  /// never picked up by the assignment sweep. Defaulted from `priority` at
-  /// creation time by `lib/sla.ts`, not by the database.
+  /// Resolution deadline. Nullable: a ticket with no `dueAt` can never breach
+  /// and is never picked up by the assignment sweep. New-ticket defaults use
+  /// the configured resolution target; changing settings never rewrites it.
   dueAt           DateTime?
 
   /// When the ticket first entered a terminal status. **Nullable and set once**:
@@ -295,4 +295,26 @@ model KnowledgeArticle {
 
   @@index([status, publishedAt])
   @@index([category, status])
+}
+
+/// Admin-managed ticket categories. `normalizedName` stores trimmed lowercase
+/// values to make uniqueness consistent on SQLite.
+model TicketCategory {
+  id             String   @id @default(cuid())
+  name           String
+  normalizedName String   @unique
+  active         Boolean  @default(true)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([active, sortOrder])
+}
+
+/// Configurable response and resolution targets for each ticket priority.
+model SlaTarget {
+  priority        String   @id
+  responseHours   Int
+  resolutionHours Int
+  updatedAt       DateTime @updatedAt
 }

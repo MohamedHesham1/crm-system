@@ -19,7 +19,7 @@ describe("tickets API", () => {
       jsonRequest("http://test/api/tickets", "POST", {
         subject: "Cannot log in",
         description: "Password reset link is broken.",
-        category: "Account",
+        category: "Billing",
         priority: "MEDIUM",
         customerId: customer.id,
       }),

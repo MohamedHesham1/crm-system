@@ -22,6 +22,8 @@ TanStack Query, and Recharts.
   comment.
 - **Knowledge base** — admins manage draft, published, and archived help
   articles; customers search and read published guides from the portal.
+- **System settings** — admins manage active ticket categories and priority
+  response/resolution targets; new ticket deadlines use resolution targets.
 - **Role-based access** — AGENT, ADMIN, and CUSTOMER roles, each guarded at
   the API layer through a single `withAuth` declaration per route.
 - **Pagination & rate limiting** — ticket and customer lists page through
@@ -59,7 +61,8 @@ with `npm test` (Vitest + React Testing Library, no separate setup needed —
 
 `admin@crm.local` is a strict superset of `agent@crm.local` — same agent
 area and customer/ticket access, plus `/agent/admin/users` (account
-management), `/agent/admin/articles` (knowledge base), and
+management), `/agent/admin/settings` (ticket categories and SLA targets),
+`/agent/admin/articles` (knowledge base), and
 `/agent/admin/audit` (the audit trail). `customer@crm.local`
 is seeded with a real linked `Customer` row (`Customer.userId`), the same
 shape self-registration produces — plus three unlinked demo customers
