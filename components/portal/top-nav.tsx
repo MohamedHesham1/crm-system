@@ -16,6 +16,9 @@ export function TopNav({ email }: { email: string }) {
           <Link href="/portal/faq" className="text-meta text-muted-foreground hover:text-foreground">
             FAQ
           </Link>
+          <Link href="/portal/knowledge-base" className="text-meta text-muted-foreground hover:text-foreground">
+            Help articles
+          </Link>
           <span className="hidden text-meta text-muted-foreground sm:inline">{email}</span>
           <SignOutButton />
           <ThemeToggle />

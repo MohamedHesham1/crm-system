@@ -20,6 +20,8 @@ TanStack Query, and Recharts.
   per-agent load, and customer satisfaction (CSAT), charted with Recharts.
 - **Customer feedback** — post-resolution 1–5 rating with an optional
   comment.
+- **Knowledge base** — admins manage draft, published, and archived help
+  articles; customers search and read published guides from the portal.
 - **Role-based access** — AGENT, ADMIN, and CUSTOMER roles, each guarded at
   the API layer through a single `withAuth` declaration per route.
 - **Pagination & rate limiting** — ticket and customer lists page through
@@ -57,7 +59,8 @@ with `npm test` (Vitest + React Testing Library, no separate setup needed —
 
 `admin@crm.local` is a strict superset of `agent@crm.local` — same agent
 area and customer/ticket access, plus `/agent/admin/users` (account
-management) and `/agent/admin/audit` (the audit trail). `customer@crm.local`
+management), `/agent/admin/articles` (knowledge base), and
+`/agent/admin/audit` (the audit trail). `customer@crm.local`
 is seeded with a real linked `Customer` row (`Customer.userId`), the same
 shape self-registration produces — plus three unlinked demo customers
 (`nadia@northwind.example`, `tom@lakeside.example`, `priya@helio.example`)
@@ -96,8 +99,10 @@ the `Attachment.storageKey` rows before removing unreferenced files.
 
 - `app/(auth)/` — public route group: `/login`, `/register`.
 - `app/agent/` — staff area (AGENT + ADMIN), sidebar shell: dashboard,
-  customers, tickets, reports, and `admin/` (users, audit trail — ADMIN only).
-- `app/portal/` — customer area, top-nav shell: tickets, FAQ.
+  customers, tickets, reports, and `admin/` (users, articles, audit trail —
+  ADMIN only).
+- `app/portal/` — customer area, top-nav shell: tickets, FAQ, and searchable
+  published knowledge-base articles.
 - `app/api/` — every route handler, wrapped in `withAuth` (`lib/api/http.ts`)
   so each declares its required role; `middleware.ts` excludes `/api/**`
   from its matcher, so the wrapper is what actually guards these routes.

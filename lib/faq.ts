@@ -1,11 +1,6 @@
 /**
- * The portal FAQ. **Hardcoded on purpose** — the story explicitly rules out a
- * database table and a searchable knowledge base. Editing this array and
- * redeploying is the whole publishing workflow.
- *
- * Answers must stay consistent with behaviour Stories 04–06 actually ship. The
- * SLA figures below come from `SLA_HOURS` in `lib/sla.ts:16–20`; if that table
- * changes, change these strings in the same commit.
+ * Short answers to common portal questions. Keep the SLA figures aligned with
+ * `SLA_HOURS` in `lib/sla.ts`; longer, searchable guides live in the knowledge base.
  */
 export type FaqEntry = { question: string; answer: string }
 
