@@ -250,6 +250,7 @@ model Notification {
   /// One of `NOTIFICATION_TYPES` in `lib/validation/notification.ts`.
   type            String
   message         String
+  dedupeKey       String?  @unique
   /// Nullable per the acceptance criteria. `Cascade`, matching `Comment.ticket`
   /// — a notification pointing at a deleted ticket is a dead link.
   relatedTicketId String?

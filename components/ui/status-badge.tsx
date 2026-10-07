@@ -5,6 +5,7 @@ import type { VariantProps } from "class-variance-authority"
 const STATUS_VARIANT: Record<TicketStatus, VariantProps<typeof badgeVariants>["variant"]> = {
   OPEN: "default",
   IN_PROGRESS: "outline",
+  ESCALATED: "destructive",
   RESOLVED: "success",
   CLOSED: "secondary",
 }

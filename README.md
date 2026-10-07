@@ -7,7 +7,7 @@ TanStack Query, and Recharts.
 ## Features
 
 - **Ticket management** — full CRUD, self-pickup assignment (claim/release,
-  admin reassign), status/priority tracking, computed SLA-breach flags, and
+  admin reassign), status/priority tracking including escalation, computed SLA-breach flags, and
   an admin-triggered assignment sweep for aging unassigned tickets.
 - **Customer profiles** — agent-managed customer records, linked to
   self-registered portal accounts via `Customer.userId`.
@@ -75,6 +75,10 @@ See `.env.example`:
   directory outside `public/` (default example is a sibling directory). Use a
   durable volume shared by all web instances; ephemeral serverless filesystems
   are unsupported.
+- `CRON_SECRET` — high-entropy bearer secret required by the SLA alert
+  endpoint. Configure an external scheduler to `POST /api/cron/sla-alerts`
+  with `Authorization: Bearer <CRON_SECRET>`. Scheduler provisioning is
+  deployment-specific and is not included in this application.
 
 ### Attachment storage operations
 

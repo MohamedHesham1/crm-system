@@ -62,6 +62,7 @@ describe("TicketDetail status control", () => {
     await screen.findByText("Cannot log in")
 
     await user.click(screen.getAllByRole("combobox")[0])
+    expect(await screen.findByRole("option", { name: "ESCALATED" })).toBeInTheDocument()
     await user.click(await screen.findByRole("option", { name: "RESOLVED" }))
 
     await waitFor(() => {
