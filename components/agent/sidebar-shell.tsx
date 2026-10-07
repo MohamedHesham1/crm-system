@@ -7,6 +7,8 @@ import { MenuIcon, XIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Wordmark } from "@/components/brand/wordmark"
+import { BRAND } from "@/lib/brand"
+import type { BrandWordmarkSettings } from "@/lib/branding"
 
 const SIDEBAR_ID = "agent-sidebar"
 
@@ -22,7 +24,13 @@ const SIDEBAR_ID = "agent-sidebar"
  * component with an inline `"use server"` action and cannot cross into a
  * client module.
  */
-export function SidebarShell({ children }: { children: ReactNode }) {
+export function SidebarShell({
+  children,
+  brand = { organizationName: BRAND.name, logoAttachmentId: null },
+}: {
+  children: ReactNode
+  brand?: BrandWordmarkSettings
+}) {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
   const [prevPathname, setPrevPathname] = useState(pathname)
@@ -47,7 +55,7 @@ export function SidebarShell({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <div className="fixed inset-x-0 top-0 z-30 flex h-14 items-center gap-2 border-b border-sidebar-border bg-sidebar px-4 text-sidebar-foreground md:hidden">
+      <div className="print-hide fixed inset-x-0 top-0 z-30 flex h-14 items-center gap-2 border-b border-sidebar-border bg-sidebar px-4 text-sidebar-foreground md:hidden">
         <Button
           type="button"
           variant="ghost"
@@ -59,7 +67,7 @@ export function SidebarShell({ children }: { children: ReactNode }) {
         >
           {open ? <XIcon /> : <MenuIcon />}
         </Button>
-        <Wordmark href="/agent" />
+        <Wordmark href="/agent" name={brand.organizationName} logoAttachmentId={brand.logoAttachmentId} />
       </div>
 
       {open ? (
@@ -67,7 +75,7 @@ export function SidebarShell({ children }: { children: ReactNode }) {
           type="button"
           aria-label="Close navigation"
           onClick={() => setOpen(false)}
-          className="fixed inset-0 z-30 bg-foreground/40 md:hidden"
+          className="print-hide fixed inset-0 z-30 bg-foreground/40 md:hidden"
         />
       ) : null}
 
@@ -75,6 +83,7 @@ export function SidebarShell({ children }: { children: ReactNode }) {
         id={SIDEBAR_ID}
         onClick={handleNavClick}
         className={cn(
+          "print-hide",
           "fixed inset-y-0 left-0 z-40 flex w-60 shrink-0 flex-col gap-6 overflow-y-auto border-r border-sidebar-border bg-sidebar p-4 text-sidebar-foreground transition-transform md:static md:translate-x-0",
           open ? "translate-x-0" : "-translate-x-full",
         )}

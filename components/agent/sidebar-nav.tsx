@@ -18,6 +18,7 @@ const BASE_LINKS = [
 const ADMIN_LINKS = [
   { href: "/agent/admin/users", label: "Admin" },
   { href: "/agent/admin/settings", label: "Settings" },
+  { href: "/agent/admin/branding", label: "Branding" },
   { href: "/agent/admin/articles", label: "Knowledge base" },
   { href: "/agent/admin/audit", label: "Audit" },
 ] as const

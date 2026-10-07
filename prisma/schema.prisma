@@ -214,9 +214,23 @@ model Attachment {
 
   customerId String?
   customer   Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  brandingSettings BrandingSettings?
 
   @@index([ticketId, createdAt])
   @@index([customerId, createdAt])
+}
+
+/// One installation-wide brand configuration; the fixed ID is "installation".
+model BrandingSettings {
+  id                String     @id
+  organizationName  String
+  primaryLight      String
+  primaryDark       String
+  accentLight       String
+  accentDark        String
+  logoAttachmentId  String?    @unique
+  logoAttachment    Attachment? @relation(fields: [logoAttachmentId], references: [id], onDelete: SetNull)
+  updatedAt         DateTime   @updatedAt
 }
 
 /// Staff follow-up tasks with optional ticket/customer context. Completion

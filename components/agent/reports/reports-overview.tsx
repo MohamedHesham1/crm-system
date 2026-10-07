@@ -1,7 +1,9 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
+import { Printer } from "lucide-react"
 
+import { Button } from "@/components/ui/button"
 import { AgentPerformanceTable } from "@/components/agent/reports/agent-performance-table"
 import { CsatSummary } from "@/components/agent/reports/csat-summary"
 import { SlaSummaryCards } from "@/components/agent/reports/sla-summary"
@@ -22,6 +24,12 @@ export function ReportsOverview({ isAdmin }: { isAdmin: boolean }) {
 
   return (
     <div className="space-y-6">
+      <div className="print-hide flex justify-end">
+        <Button type="button" variant="outline" onClick={() => window.print()}>
+          <Printer aria-hidden="true" />
+          Print report
+        </Button>
+      </div>
       {isPending ? <Spinner label="Loading reports…" /> : null}
 
       {isError ? (

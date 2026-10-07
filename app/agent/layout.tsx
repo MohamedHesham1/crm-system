@@ -8,17 +8,19 @@ import { SidebarShell } from "@/components/agent/sidebar-shell"
 import { SignOutButton } from "@/components/sign-out-button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Wordmark } from "@/components/brand/wordmark"
+import { getBrandSettings } from "@/lib/branding"
 
 export default async function AgentLayout({ children }: { children: ReactNode }) {
   const session = await auth()
 
   if (!session?.user) redirect("/login")
   if (!isStaff(session.user.role)) redirect("/portal")
+  const brand = await getBrandSettings()
 
   return (
     <div className="flex min-h-screen bg-surface-sunken">
-      <SidebarShell>
-        <Wordmark href="/agent" className="px-2 pt-1" />
+      <SidebarShell brand={brand}>
+        <Wordmark href="/agent" className="px-2 pt-1" name={brand.organizationName} logoAttachmentId={brand.logoAttachmentId} />
         <SidebarNav role={session.user.role} />
         <div className="mt-auto space-y-2 border-t border-sidebar-border pt-4">
           <p className="px-2 text-meta text-muted-foreground">{session.user.email}</p>

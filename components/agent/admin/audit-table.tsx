@@ -101,6 +101,8 @@ export function AuditTable() {
                             User account
                           </Link>
                         )
+                      : log.entityType === "BrandingSettings"
+                        ? "Organization branding"
                       : log.entityType}
                 </TableCell>
               </TableRow>

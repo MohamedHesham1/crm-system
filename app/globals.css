@@ -40,6 +40,7 @@
   --color-brand: var(--brand);
   --color-brand-foreground: var(--brand-foreground);
   --color-brand-soft: var(--brand-soft);
+  --color-brand-accent: var(--brand-accent);
   --color-signal: var(--signal);
   --color-signal-foreground: var(--signal-foreground);
   --color-signal-soft: var(--signal-soft);
@@ -107,8 +108,8 @@
 
   /* Harbour teal-blue. Primary is a working colour: buttons, links, focus
      rings, the wordmark mark. */
-  --primary: oklch(0.452 0.078 216);
-  --primary-foreground: oklch(0.985 0.005 220);
+  --primary: var(--configured-primary-light, oklch(0.452 0.078 216));
+  --primary-foreground: var(--configured-primary-light-foreground, oklch(0.985 0.005 220));
   --secondary: oklch(0.955 0.006 247);
   --secondary-foreground: oklch(0.315 0.023 258);
   --muted: oklch(0.958 0.005 247);
@@ -124,9 +125,9 @@
   --success: oklch(0.588 0.128 152);
   --border: oklch(0.902 0.008 250);
   --input: oklch(0.902 0.008 250);
-  --ring: oklch(0.452 0.078 216);
+  --ring: var(--primary);
 
-  --chart-1: oklch(0.452 0.078 216);
+  --chart-1: var(--primary);
   --chart-2: oklch(0.588 0.094 205);
   --chart-3: oklch(0.688 0.098 178);
   --chart-4: oklch(0.705 0.148 62);
@@ -136,17 +137,18 @@
 
   --sidebar: oklch(0.968 0.005 247);
   --sidebar-foreground: oklch(0.235 0.019 258);
-  --sidebar-primary: oklch(0.452 0.078 216);
-  --sidebar-primary-foreground: oklch(0.985 0.005 220);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
   --sidebar-accent: oklch(0.928 0.014 222);
   --sidebar-accent-foreground: oklch(0.300 0.045 216);
   --sidebar-border: oklch(0.898 0.008 250);
-  --sidebar-ring: oklch(0.452 0.078 216);
+  --sidebar-ring: var(--primary);
 
   /* New named tokens — the part of the system that is ours, not shadcn's. */
-  --brand: oklch(0.452 0.078 216);
-  --brand-foreground: oklch(0.985 0.005 220);
-  --brand-soft: oklch(0.938 0.028 216);
+  --brand: var(--primary);
+  --brand-foreground: var(--primary-foreground);
+  --brand-soft: color-mix(in oklab, var(--brand) 12%, white);
+  --brand-accent: var(--configured-accent-light, oklch(0.705 0.148 62));
   --signal: oklch(0.705 0.148 62);
   --signal-foreground: oklch(0.268 0.058 62);
   --signal-soft: oklch(0.948 0.048 76);
@@ -161,8 +163,8 @@
   --card-foreground: oklch(0.945 0.005 247);
   --popover: oklch(0.238 0.016 258);
   --popover-foreground: oklch(0.945 0.005 247);
-  --primary: oklch(0.742 0.088 205);
-  --primary-foreground: oklch(0.196 0.028 216);
+  --primary: var(--configured-primary-dark, oklch(0.742 0.088 205));
+  --primary-foreground: var(--configured-primary-dark-foreground, oklch(0.196 0.028 216));
   --secondary: oklch(0.288 0.017 258);
   --secondary-foreground: oklch(0.945 0.005 247);
   --muted: oklch(0.288 0.017 258);
@@ -173,9 +175,9 @@
   --success: oklch(0.702 0.132 152);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 16%);
-  --ring: oklch(0.742 0.088 205);
+  --ring: var(--primary);
 
-  --chart-1: oklch(0.742 0.088 205);
+  --chart-1: var(--primary);
   --chart-2: oklch(0.668 0.086 195);
   --chart-3: oklch(0.782 0.092 172);
   --chart-4: oklch(0.792 0.138 72);
@@ -185,16 +187,17 @@
   --sidebar-foreground: oklch(0.912 0.006 247);
   /* Was `oklch(0.488 0.243 264.376)` — the shadcn default purple, and the
      only saturated hue in the old greyscale palette. Deliberately removed. */
-  --sidebar-primary: oklch(0.742 0.088 205);
-  --sidebar-primary-foreground: oklch(0.196 0.028 216);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
   --sidebar-accent: oklch(0.288 0.024 216);
   --sidebar-accent-foreground: oklch(0.945 0.005 247);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.742 0.088 205);
+  --sidebar-ring: var(--primary);
 
-  --brand: oklch(0.742 0.088 205);
-  --brand-foreground: oklch(0.196 0.028 216);
-  --brand-soft: oklch(0.318 0.041 212);
+  --brand: var(--primary);
+  --brand-foreground: var(--primary-foreground);
+  --brand-soft: color-mix(in oklab, var(--brand) 24%, var(--background));
+  --brand-accent: var(--configured-accent-dark, oklch(0.792 0.138 72));
   --signal: oklch(0.792 0.138 72);
   --signal-foreground: oklch(0.918 0.062 76);
   --signal-soft: oklch(0.352 0.062 62);
@@ -226,5 +229,18 @@
      this hue appears in the app — that is what makes it read as a signal. */
   [data-sla="breached"] > td:first-child {
     box-shadow: inset 2px 0 0 0 var(--signal);
+  }
+
+  @media print {
+    body {
+      background: white !important;
+      color: #17212b !important;
+    }
+    .print-hide {
+      display: none !important;
+    }
+    .print-only {
+      display: block !important;
+    }
   }
 }

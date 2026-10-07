@@ -2,6 +2,7 @@ import Link from "next/link"
 
 import { BRAND } from "@/lib/brand"
 import { cn } from "@/lib/utils"
+import { BrandLogo } from "@/components/brand/brand-logo"
 
 /**
  * Placeholder branding, not a designed logo: a geometric mark in the brand
@@ -12,30 +13,23 @@ export function Wordmark({
   href,
   showProduct = false,
   className,
+  name = BRAND.name,
+  logoAttachmentId = null,
 }: {
   href: string
   showProduct?: boolean
   className?: string
+  name?: string
+  logoAttachmentId?: string | null
 }) {
   return (
     <Link href={href} className={cn("flex items-center gap-2", className)}>
-      <svg
-        viewBox="0 0 20 20"
-        aria-hidden="true"
-        className="size-5 shrink-0 text-brand"
-      >
-        <rect x="1" y="1" width="18" height="18" rx="5" fill="currentColor" opacity="0.16" />
-        <path
-          d="M5 13.5 L10 5 L15 13.5"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <span className="font-heading text-title leading-none">
-        {BRAND.name}
+      <BrandLogo
+        key={logoAttachmentId ?? "default"}
+        logoUrl={logoAttachmentId ? "/api/branding/logo" : null}
+      />
+      <span className="max-w-full truncate font-heading text-title leading-none">
+        {name}
         {showProduct ? (
           <span className="ml-1.5 text-meta font-normal text-muted-foreground">
             {BRAND.product}

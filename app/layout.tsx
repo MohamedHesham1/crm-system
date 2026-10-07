@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
+import type { CSSProperties } from "react";
 import { Archivo, Public_Sans } from "next/font/google";
 import "./globals.css";
+import { brandCssVariables, BRAND_PRODUCT, getBrandSettings } from "@/lib/branding";
 import { BRAND } from "@/lib/brand";
 import { Providers } from "./providers";
 
@@ -20,12 +23,21 @@ const publicSans = Public_Sans({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: { default: BRAND.fullName, template: `%s · ${BRAND.name}` },
-  description: BRAND.description,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  await connection()
+  const brand = await getBrandSettings()
+  return {
+    title: { default: `${brand.organizationName} ${BRAND_PRODUCT}`, template: `%s · ${brand.organizationName}` },
+    description: brand.organizationName === BRAND.name
+      ? BRAND.description
+      : `${brand.organizationName} customer support and service desk`,
+  }
+}
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  await connection()
+  const brand = await getBrandSettings()
+
   return (
     <html
       lang="en"
@@ -34,6 +46,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       // hydration mismatch on every load.
       suppressHydrationWarning
       className={`${publicSans.variable} ${archivo.variable} h-full antialiased`}
+      style={brandCssVariables(brand) as CSSProperties}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <Providers>{children}</Providers>
