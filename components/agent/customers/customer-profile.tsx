@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { AttachmentPanel } from "@/components/shared/attachment-panel"
 import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
 import { customerKeys, fetchCustomer, updateCustomer } from "@/lib/customers"
@@ -97,6 +98,7 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
           ) : null}
         </CardContent>
       </Card>
+      <AttachmentPanel owner={{ type: "customer", id: customerId }} allowDeleteAny />
     </div>
   )
 }

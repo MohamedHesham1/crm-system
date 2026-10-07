@@ -14,9 +14,13 @@ export class ApiError extends Error {
 
 /** Shared by every client data module. Throws `ApiError` on a non-2xx response. */
 export async function request<T>(input: string, init?: RequestInit): Promise<T> {
+  const isFormData = typeof FormData !== "undefined" && init?.body instanceof FormData
   const response = await fetch(input, {
     ...init,
-    headers: init?.body ? { "Content-Type": "application/json", ...init?.headers } : init?.headers,
+    headers:
+      init?.body && !isFormData
+        ? { "Content-Type": "application/json", ...init?.headers }
+        : init?.headers,
   })
 
   const payload = await response.json().catch(() => null)

@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma"
  * keeps the order readable and independent of cascade behaviour.
  */
 export async function resetDb(): Promise<void> {
+  await prisma.attachment.deleteMany()
   await prisma.feedback.deleteMany()
   await prisma.comment.deleteMany()
   await prisma.notification.deleteMany()

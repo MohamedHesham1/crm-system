@@ -1,8 +1,10 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
+import { useSession } from "next-auth/react"
 
 import { Badge } from "@/components/ui/badge"
+import { AttachmentPanel } from "@/components/shared/attachment-panel"
 import { Spinner } from "@/components/ui/spinner"
 import { StatusBadge } from "@/components/ui/status-badge"
 import { CommentThread } from "@/components/agent/tickets/comment-thread"
@@ -11,6 +13,7 @@ import { TERMINAL_STATUSES } from "@/lib/sla"
 import { fetchTicket, ticketKeys } from "@/lib/tickets"
 
 export function PortalTicketDetail({ ticketId }: { ticketId: string }) {
+  const { data: session } = useSession()
   const { data, isPending, isError, error } = useQuery({
     queryKey: ticketKeys.detail(ticketId),
     queryFn: () => fetchTicket(ticketId),
@@ -46,6 +49,10 @@ export function PortalTicketDetail({ ticketId }: { ticketId: string }) {
       ) : null}
 
       <CommentThread ticketId={ticketId} canWriteInternalNotes={false} />
+      <AttachmentPanel
+        owner={{ type: "ticket", id: ticketId }}
+        currentUserId={session?.user.id}
+      />
     </div>
   )
 }

@@ -12,6 +12,8 @@ TanStack Query, and Recharts.
 - **Customer profiles** — agent-managed customer records, linked to
   self-registered portal accounts via `Customer.userId`.
 - **Comment threads** — per-ticket discussion between agents and customers.
+- **Attachments** — ticket and staff-only customer-profile files stored on a
+  private persistent local volume, with authenticated downloads.
 - **Audit trail & notifications** — every status/priority/assignment change
   is logged, with an in-app notification bell for agents.
 - **Reporting dashboard** — SLA on-time rate, average resolution time,
@@ -69,6 +71,22 @@ See `.env.example`:
 - `DATABASE_URL` — SQLite file, resolved relative to `prisma/schema.prisma`.
 - `AUTH_SECRET` — required by Auth.js; generate with `openssl rand -base64 32`.
 - `AUTH_TRUST_HOST` — required when not deployed on Vercel.
+- `ATTACHMENT_STORAGE_DIR` — required for attachments; private persistent
+  directory outside `public/` (default example is a sibling directory). Use a
+  durable volume shared by all web instances; ephemeral serverless filesystems
+  are unsupported.
+
+### Attachment storage operations
+
+Create the configured directory and grant the application process read/write
+access before enabling uploads. Back up the SQLite database and attachment
+volume together, and restore both from the same backup point. Each web instance
+must mount the same durable volume at the configured path. Keep this directory
+outside `public/`; downloads are served only through authenticated API routes.
+Uploaded files are limited to 10 MiB and PNG, JPEG, GIF, WebP, PDF, or UTF-8
+plain text. Orphan bytes can remain if the process stops between writing file
+bytes and committing metadata; periodically compare stored opaque files with
+the `Attachment.storageKey` rows before removing unreferenced files.
 
 ## Project layout
 

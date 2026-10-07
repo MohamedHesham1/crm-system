@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Stories 02, 05, and 09 completed; reuse customer/ticket scope.
+- Stories 02, 05, 09, and 13 completed; reuse customer/ticket scope and the shared staff/portal ticket surface.
 - Configure `ATTACHMENT_STORAGE_DIR` through the deployment environment and document durable-volume requirements.
 
 ---

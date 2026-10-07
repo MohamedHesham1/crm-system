@@ -25,10 +25,11 @@ model User {
 
   /// Tickets this staff member currently owns. Empty for CUSTOMER logins —
   /// a customer sits on the `Ticket.customer` side, never this one.
-  assignedTickets Ticket[]
-  comments        Comment[]
-  auditLogs       AuditLog[]
-  notifications   Notification[]
+  assignedTickets     Ticket[]
+  comments            Comment[]
+  uploadedAttachments Attachment[]
+  auditLogs           AuditLog[]
+  notifications       Notification[]
 }
 
 /// Customer profiles are agent-managed. `notes` is free text (SQLite maps
@@ -50,7 +51,8 @@ model Customer {
   userId    String?  @unique
   user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  tickets   Ticket[]
+  tickets     Ticket[]
+  attachments Attachment[]
 }
 
 /// Support tickets. `priority` and `status` are Strings, not Prisma enums —
@@ -101,6 +103,7 @@ model Ticket {
   updatedAt       DateTime  @updatedAt
 
   comments        Comment[]
+  attachments     Attachment[]
   notifications   Notification[]
   feedback        Feedback?
 
@@ -148,12 +151,35 @@ model Comment {
   /// list only), so this is a guarantee waiting for a caller.
   author    User     @relation(fields: [authorId], references: [id], onDelete: Restrict)
 
-  body      String
-  isInternal Boolean @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  body       String
+  isInternal Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@index([ticketId, createdAt])
+}
+
+/// Attachment bytes live on a private persistent filesystem volume. Database
+/// stores only opaque storage keys and owner/uploader metadata.
+model Attachment {
+  id           String   @id @default(cuid())
+  storageKey   String   @unique
+  originalName String
+  contentType  String
+  size         Int
+  createdAt    DateTime @default(now())
+
+  uploaderId String
+  uploader   User     @relation(fields: [uploaderId], references: [id], onDelete: Restrict)
+
+  ticketId String?
+  ticket   Ticket?  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId, createdAt])
+  @@index([customerId, createdAt])
 }
 
 /// Append-only trail of ticket mutations. Written by `logActivity()` in

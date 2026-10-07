@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { Button } from "@/components/ui/button"
+import { AttachmentPanel } from "@/components/shared/attachment-panel"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SlaBadge } from "@/components/ui/sla-badge"
 import { Spinner } from "@/components/ui/spinner"
@@ -223,6 +224,7 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
       ) : null}
 
       <CommentThread ticketId={ticketId} canWriteInternalNotes />
+      <AttachmentPanel owner={{ type: "ticket", id: ticketId }} allowDeleteAny />
     </div>
   )
 }
