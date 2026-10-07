@@ -23,6 +23,7 @@ export const NOTIFICATION_TYPES = [
   "TICKET_UNASSIGNED",
   "TICKET_COMMENTED",
   "SLA_BREACHED",
+  "COMMENT_MENTIONED",
 ] as const
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number]

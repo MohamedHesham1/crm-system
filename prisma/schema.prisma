@@ -27,6 +27,7 @@ model User {
   /// a customer sits on the `Ticket.customer` side, never this one.
   assignedTickets     Ticket[]
   comments            Comment[]
+  commentMentions     CommentMention[]
   uploadedAttachments Attachment[]
   tasksOwned           Task[]               @relation("TaskOwner")
   auditLogs           AuditLog[]
@@ -159,7 +160,20 @@ model Comment {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
+  mentions CommentMention[]
+
   @@index([ticketId, createdAt])
+}
+
+model CommentMention {
+  commentId String
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([commentId, userId])
+  @@index([userId, createdAt])
 }
 
 /// Attachment bytes live on a private persistent filesystem volume. Database

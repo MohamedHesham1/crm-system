@@ -17,10 +17,18 @@ export type UserListItem = {
 export const userKeys = {
   all: ["users"] as const,
   list: () => [...userKeys.all, "list"] as const,
+  staff: () => [...userKeys.all, "staff"] as const,
 }
 
 export async function fetchUsers(): Promise<UserListItem[]> {
   const { users } = await request<{ users: UserListItem[] }>("/api/admin/users")
+  return users
+}
+
+export async function fetchStaff(): Promise<Pick<UserListItem, "id" | "name" | "role">[]> {
+  const { users } = await request<{ users: Pick<UserListItem, "id" | "name" | "role">[] }>(
+    "/api/staff",
+  )
   return users
 }
 

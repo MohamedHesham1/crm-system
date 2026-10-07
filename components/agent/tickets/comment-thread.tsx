@@ -5,10 +5,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
 import { ApiError, fetchComments, postComment, ticketKeys } from "@/lib/tickets"
+import { fetchStaff, userKeys } from "@/lib/users"
 import { createCommentSchema, type CreateCommentInput } from "@/lib/validation/ticket"
 
 const QUICK_REPLIES = [
@@ -44,6 +46,8 @@ export function CommentThread({
   const [body, setBody] = useState("")
   const [isInternal, setIsInternal] = useState(false)
   const [selectedQuickReply, setSelectedQuickReply] = useState("")
+  const [mentionSearch, setMentionSearch] = useState("")
+  const [mentionedUserIds, setMentionedUserIds] = useState<string[]>([])
 
   const { data, isPending, isError, error } = useQuery({
     queryKey: ticketKeys.comments(ticketId),
@@ -58,18 +62,25 @@ export function CommentThread({
     staleTime: 0,
   })
 
+  const staffQuery = useQuery({
+    queryKey: userKeys.staff(),
+    queryFn: fetchStaff,
+    enabled: canWriteInternalNotes,
+  })
+
   const mutation = useMutation({
     mutationFn: (input: CreateCommentInput) => postComment(ticketId, input),
     onSuccess: async () => {
       setBody("")
       setIsInternal(false)
+      setMentionedUserIds([])
       await queryClient.invalidateQueries({ queryKey: ticketKeys.comments(ticketId) })
     },
   })
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const parsed = createCommentSchema.safeParse({ body, isInternal })
+    const parsed = createCommentSchema.safeParse({ body, isInternal, mentionedUserIds })
     if (!parsed.success) return
     mutation.mutate(parsed.data)
   }
@@ -84,6 +95,9 @@ export function CommentThread({
   const visibleComments = data?.filter(
     (comment) => canWriteInternalNotes || !comment.isInternal,
   ) ?? []
+  const matchingStaff = (staffQuery.data ?? []).filter((staff) =>
+    staff.name.toLowerCase().includes(mentionSearch.trim().toLowerCase()),
+  )
 
   return (
     <div className="space-y-4">
@@ -115,6 +129,11 @@ export function CommentThread({
                   </span>
                 </div>
                 <p className="whitespace-pre-wrap">{comment.body}</p>
+                {canWriteInternalNotes && comment.mentions?.length ? (
+                  <p className="mt-2 text-meta text-muted-foreground">
+                    Mentioned: {comment.mentions.map((mention) => mention.user.name).join(", ")}
+                  </p>
+                ) : null}
               </div>
             ))
           )}
@@ -156,6 +175,49 @@ export function CommentThread({
               </SelectContent>
             </Select>
           </div>
+        ) : null}
+        {canWriteInternalNotes ? (
+          <fieldset className="space-y-2 rounded-md border p-3">
+            <legend className="px-1 text-label font-medium">Mention staff</legend>
+            <Input
+              aria-label="Search staff to mention"
+              value={mentionSearch}
+              onChange={(event) => setMentionSearch(event.target.value)}
+              placeholder="Search staff"
+            />
+            {staffQuery.isError ? (
+              <p role="alert" className="text-meta text-destructive">
+                {staffQuery.error instanceof Error
+                  ? staffQuery.error.message
+                  : "Could not load staff list."}
+              </p>
+            ) : null}
+            {staffQuery.isPending ? <Spinner label="Loading staff…" /> : null}
+            <div className="max-h-36 space-y-1 overflow-y-auto">
+              {matchingStaff.map((staff) => (
+                <label key={staff.id} className="flex items-center gap-2 text-meta">
+                  <input
+                    type="checkbox"
+                    checked={mentionedUserIds.includes(staff.id)}
+                    disabled={
+                      !mentionedUserIds.includes(staff.id) && mentionedUserIds.length >= 20
+                    }
+                    onChange={(event) =>
+                      setMentionedUserIds((current) =>
+                        event.target.checked
+                          ? [...current, staff.id]
+                          : current.filter((id) => id !== staff.id),
+                      )
+                    }
+                  />
+                  {staff.name}
+                </label>
+              ))}
+              {!staffQuery.isPending && matchingStaff.length === 0 ? (
+                <p className="text-meta text-muted-foreground">No matching staff.</p>
+              ) : null}
+            </div>
+          </fieldset>
         ) : null}
         <Textarea
           rows={3}

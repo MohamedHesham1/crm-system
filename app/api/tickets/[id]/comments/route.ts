@@ -1,6 +1,7 @@
 import { notify } from "@/lib/activity"
 import { prisma } from "@/lib/prisma"
 import { notFound, readJson, validationError, withAuth } from "@/lib/api/http"
+import { isRole, isStaff } from "@/lib/roles"
 import { ticketScopeWhere, type Viewer } from "@/lib/ticket-access"
 import { createCommentSchema } from "@/lib/validation/ticket"
 
@@ -11,6 +12,20 @@ const COMMENT_SELECT = {
   createdAt: true,
   author: { select: { id: true, name: true, role: true } },
 } as const
+
+function commentSelect(includeMentions: boolean) {
+  return {
+    ...COMMENT_SELECT,
+    ...(includeMentions
+      ? {
+          mentions: {
+            orderBy: [{ createdAt: "asc" as const }, { userId: "asc" as const }],
+            select: { user: { select: { id: true, name: true } } },
+          },
+        }
+      : {}),
+  }
+}
 
 /** Both verbs re-check ownership on every call — do not trust that the client only polls tickets it can see. */
 async function loadScopedTicket(viewer: Viewer, id: string) {
@@ -36,7 +51,7 @@ export const GET = withAuth(
         ...(viewer.kind === "customer" ? { isInternal: false } : {}),
       },
       orderBy: { createdAt: "asc" },
-      select: COMMENT_SELECT,
+      select: commentSelect(viewer.kind === "staff"),
     })
 
     return Response.json({ comments })
@@ -55,8 +70,34 @@ export const POST = withAuth(
 
     const parsed = createCommentSchema.safeParse(body.data)
     if (!parsed.success) return validationError(parsed.error)
-    if (viewer.kind !== "staff" && parsed.data.isInternal) {
-      return Response.json({ error: "Customers cannot create internal notes." }, { status: 403 })
+    if (
+      viewer.kind !== "staff" &&
+      (parsed.data.isInternal || parsed.data.mentionedUserIds.length > 0)
+    ) {
+      return Response.json(
+        { error: "Customers cannot create internal notes or mention staff." },
+        { status: 403 },
+      )
+    }
+
+    const mentionedUserIds = [...new Set(parsed.data.mentionedUserIds)]
+    if (mentionedUserIds.length > 0) {
+      const recipients = await prisma.user.findMany({
+        where: { id: { in: mentionedUserIds } },
+        select: { id: true, role: true },
+      })
+      if (
+        recipients.length !== mentionedUserIds.length ||
+        recipients.some((recipient) => !isRole(recipient.role) || !isStaff(recipient.role))
+      ) {
+        return Response.json(
+          {
+            error: "Validation failed",
+            fieldErrors: { mentionedUserIds: ["Choose existing staff accounts only."] },
+          },
+          { status: 400 },
+        )
+      }
     }
 
     const comment = await prisma.$transaction(async (tx) => {
@@ -67,25 +108,40 @@ export const POST = withAuth(
           body: parsed.data.body,
           isInternal: parsed.data.isInternal,
         },
-        select: COMMENT_SELECT,
       })
+
+      for (const userId of mentionedUserIds) {
+        await tx.commentMention.create({ data: { commentId: created.id, userId } })
+      }
 
       await notify(
         tx,
         viewer.id,
-        scoped.ticket.assignedAgentId === null
-          ? []
-          : [
-              {
-                userId: scoped.ticket.assignedAgentId,
-                type: "TICKET_COMMENTED",
-                message: `${viewer.name} commented on "${scoped.ticket.subject}".`,
-                relatedTicketId: id,
-              },
-            ],
+        [
+          ...(scoped.ticket.assignedAgentId === null ||
+          mentionedUserIds.includes(scoped.ticket.assignedAgentId)
+            ? []
+            : [
+                {
+                  userId: scoped.ticket.assignedAgentId,
+                  type: "TICKET_COMMENTED" as const,
+                  message: `${viewer.name} commented on "${scoped.ticket.subject}".`,
+                  relatedTicketId: id,
+                },
+              ]),
+          ...mentionedUserIds.map((userId) => ({
+            userId,
+            type: "COMMENT_MENTIONED" as const,
+            message: `${viewer.name} mentioned you on "${scoped.ticket.subject}".`,
+            relatedTicketId: id,
+          })),
+        ],
       )
 
-      return created
+      return tx.comment.findUniqueOrThrow({
+        where: { id: created.id },
+        select: commentSelect(viewer.kind === "staff"),
+      })
     })
 
     return Response.json({ comment }, { status: 201 })

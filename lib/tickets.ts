@@ -37,6 +37,7 @@ export type TicketComment = {
   isInternal: boolean
   createdAt: string
   author: { id: string; name: string; role: Role }
+  mentions?: { user: { id: string; name: string } }[]
 }
 
 export type TicketTimeline = {
