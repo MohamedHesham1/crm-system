@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { SlaBadge } from "@/components/ui/sla-badge"
 import { Spinner } from "@/components/ui/spinner"
 import { CommentThread } from "@/components/agent/tickets/comment-thread"
-import { ApiError, fetchTicket, reopenTicket, ticketKeys, updateTicket } from "@/lib/tickets"
+import { ApiError, fetchTicket, fetchTicketTimeline, reopenTicket, ticketKeys, updateTicket } from "@/lib/tickets"
 import { fetchUsers, userKeys } from "@/lib/users"
 import { TICKET_PRIORITIES, TICKET_STATUSES } from "@/lib/validation/ticket"
 
@@ -28,6 +28,11 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
     queryKey: userKeys.list(),
     queryFn: fetchUsers,
     enabled: isAdmin,
+  })
+
+  const timelineQuery = useQuery({
+    queryKey: ticketKeys.timeline(ticketId),
+    queryFn: () => fetchTicketTimeline(ticketId),
   })
 
   const updateMutation = useMutation({
@@ -222,6 +227,52 @@ export function TicketDetail({ ticketId }: { ticketId: string }) {
           {mutationError}
         </p>
       ) : null}
+
+      <section aria-labelledby="ticket-timeline-heading" className="space-y-3">
+        <h2 id="ticket-timeline-heading" className="text-title">Ticket timeline</h2>
+        {timelineQuery.isPending ? <Spinner label="Loading ticket timeline…" /> : null}
+        {timelineQuery.isError ? (
+          <p role="alert" className="text-meta text-destructive">
+            {timelineQuery.error instanceof Error
+              ? timelineQuery.error.message
+              : "Could not load ticket timeline."}
+          </p>
+        ) : null}
+        {timelineQuery.data ? (
+          <ol className="space-y-3 border-l pl-4">
+            <li>
+              <p className="text-body font-medium">Ticket created</p>
+              <p className="text-meta text-muted-foreground">
+                {new Date(timelineQuery.data.ticket.createdAt).toLocaleString()}
+              </p>
+            </li>
+            {[
+              ...timelineQuery.data.comments.map((comment) => ({
+                id: `comment-${comment.id}`,
+                createdAt: comment.createdAt,
+                detail: `${comment.author.name}: ${comment.body}`,
+                label: comment.isInternal ? "Internal note" : "Comment",
+              })),
+              ...timelineQuery.data.auditLogs.map((entry) => ({
+                id: `audit-${entry.id}`,
+                createdAt: entry.createdAt,
+                detail: entry.detail,
+                label: entry.action.replaceAll("_", " "),
+              })),
+            ]
+              .sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id))
+              .map((event) => (
+                <li key={event.id}>
+                  <p className="text-label uppercase text-muted-foreground">{event.label}</p>
+                  <p className="whitespace-pre-wrap text-body">{event.detail}</p>
+                  <p className="text-meta text-muted-foreground">
+                    {new Date(event.createdAt).toLocaleString()}
+                  </p>
+                </li>
+              ))}
+          </ol>
+        ) : null}
+      </section>
 
       <CommentThread ticketId={ticketId} canWriteInternalNotes />
       <AttachmentPanel owner={{ type: "ticket", id: ticketId }} allowDeleteAny />

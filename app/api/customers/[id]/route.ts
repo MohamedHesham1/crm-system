@@ -4,12 +4,30 @@ import { prisma } from "@/lib/prisma"
 import { notFound, readJson, validationError, withAuth } from "@/lib/api/http"
 import { updateCustomerSchema } from "@/lib/validation/customer"
 
+const CUSTOMER_PROFILE_INCLUDE = {
+  tickets: {
+    where: { deletedAt: null },
+    orderBy: { createdAt: "desc" as const },
+    select: {
+      id: true,
+      subject: true,
+      status: true,
+      priority: true,
+      createdAt: true,
+      assignedAgent: { select: { id: true, name: true } },
+    },
+  },
+}
+
 export const GET = withAuth(
   { role: "agent" },
   async (_request, ctx: RouteContext<"/api/customers/[id]">) => {
     const { id } = await ctx.params
 
-    const customer = await prisma.customer.findUnique({ where: { id } })
+    const customer = await prisma.customer.findUnique({
+      where: { id },
+      include: CUSTOMER_PROFILE_INCLUDE,
+    })
     if (!customer) return notFound("Customer not found.")
 
     return Response.json({ customer })
@@ -38,7 +56,11 @@ export const PATCH = withAuth(
     }
 
     try {
-      const customer = await prisma.customer.update({ where: { id }, data })
+      const customer = await prisma.customer.update({
+        where: { id },
+        data,
+        include: CUSTOMER_PROFILE_INCLUDE,
+      })
       return Response.json({ customer })
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {

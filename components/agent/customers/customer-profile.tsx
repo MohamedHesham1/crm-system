@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AttachmentPanel } from "@/components/shared/attachment-panel"
 import { Spinner } from "@/components/ui/spinner"
@@ -96,6 +97,34 @@ export function CustomerProfile({ customerId }: { customerId: string }) {
               {mutation.error instanceof Error ? mutation.error.message : "Could not save notes."}
             </p>
           ) : null}
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Ticket history</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {data.tickets.length === 0 ? (
+            <p className="text-meta text-muted-foreground">No tickets yet.</p>
+          ) : (
+            <ul className="space-y-3">
+              {data.tickets.map((ticket) => (
+                <li key={ticket.id} className="flex flex-wrap items-center justify-between gap-2">
+                  <Link
+                    href={`/agent/tickets/${ticket.id}`}
+                    className="text-body font-medium hover:underline"
+                  >
+                    {ticket.subject}
+                  </Link>
+                  <span className="text-meta text-muted-foreground">
+                    {ticket.assignedAgent?.name ?? "Unassigned"} ·{" "}
+                    {new Date(ticket.createdAt).toLocaleDateString()}
+                  </span>
+                  <Badge variant="outline">{ticket.status}</Badge>
+                </li>
+              ))}
+            </ul>
+          )}
         </CardContent>
       </Card>
       <AttachmentPanel owner={{ type: "customer", id: customerId }} allowDeleteAny />

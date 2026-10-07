@@ -39,6 +39,17 @@ export type TicketComment = {
   author: { id: string; name: string; role: Role }
 }
 
+export type TicketTimeline = {
+  ticket: { id: string; subject: string; createdAt: string }
+  comments: TicketComment[]
+  auditLogs: {
+    id: string
+    action: string
+    detail: string
+    createdAt: string
+  }[]
+}
+
 export type TicketDetail = TicketListItem & {
   description: string
   customer: { id: string; name: string; email: string; company: string | null }
@@ -72,6 +83,7 @@ export const ticketKeys = {
   list: (filters: TicketFilters = {}) => [...ticketKeys.all, "list", filters] as const,
   detail: (id: string) => [...ticketKeys.all, "detail", id] as const,
   comments: (id: string) => [...ticketKeys.all, "detail", id, "comments"] as const,
+  timeline: (id: string) => [...ticketKeys.all, "detail", id, "timeline"] as const,
 }
 
 function buildQuery(filters: TicketFilters): string {
@@ -103,6 +115,13 @@ export async function fetchTicket(id: string): Promise<TicketDetail> {
 export async function fetchComments(id: string): Promise<TicketComment[]> {
   const { comments } = await request<{ comments: TicketComment[] }>(`/api/tickets/${id}/comments`)
   return comments
+}
+
+export async function fetchTicketTimeline(id: string): Promise<TicketTimeline> {
+  const { timeline } = await request<{ timeline: TicketTimeline }>(
+    `/api/tickets/${encodeURIComponent(id)}/timeline`,
+  )
+  return timeline
 }
 
 export async function createTicket(input: CreateTicketInput): Promise<TicketDetail> {

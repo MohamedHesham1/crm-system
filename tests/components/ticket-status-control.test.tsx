@@ -4,11 +4,18 @@ import userEvent from "@testing-library/user-event"
 
 import { renderWithQuery } from "@/tests/helpers/render"
 
-const { fetchTicketMock, updateTicketMock, useSessionMock, fetchCommentsMock } = vi.hoisted(() => ({
+const {
+  fetchTicketMock,
+  updateTicketMock,
+  useSessionMock,
+  fetchCommentsMock,
+  fetchTicketTimelineMock,
+} = vi.hoisted(() => ({
   fetchTicketMock: vi.fn(),
   updateTicketMock: vi.fn(),
   useSessionMock: vi.fn(),
   fetchCommentsMock: vi.fn(),
+  fetchTicketTimelineMock: vi.fn(),
 }))
 
 vi.mock("next-auth/react", () => ({ useSession: useSessionMock }))
@@ -19,6 +26,7 @@ vi.mock("@/lib/tickets", async (importOriginal) => {
     fetchTicket: fetchTicketMock,
     updateTicket: updateTicketMock,
     fetchComments: fetchCommentsMock,
+    fetchTicketTimeline: fetchTicketTimelineMock,
   }
 })
 
@@ -43,6 +51,11 @@ describe("TicketDetail status control", () => {
     const user = userEvent.setup()
     useSessionMock.mockReturnValue({ data: { user: { id: "agent-1", name: "Ava", role: "AGENT" } } })
     fetchCommentsMock.mockResolvedValue([])
+    fetchTicketTimelineMock.mockResolvedValue({
+      ticket: { id: "t1", subject: "Cannot log in", createdAt: new Date().toISOString() },
+      comments: [],
+      auditLogs: [],
+    })
     fetchTicketMock.mockResolvedValue({ ...BASE_TICKET, status: "OPEN", assignedAgent: null })
 
     renderWithQuery(<TicketDetail ticketId="t1" />)

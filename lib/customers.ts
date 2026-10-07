@@ -23,6 +23,17 @@ export type Customer = CustomerListItem & {
   updatedAt: string
 }
 
+export type CustomerProfileData = Customer & { tickets: CustomerTicketHistoryItem[] }
+
+export type CustomerTicketHistoryItem = {
+  id: string
+  subject: string
+  status: string
+  priority: string
+  createdAt: string
+  assignedAgent: { id: string; name: string } | null
+}
+
 export const customerKeys = {
   all: ["customers"] as const,
   list: (page = 1) => [...customerKeys.all, "list", page] as const,
@@ -47,8 +58,8 @@ export async function fetchCustomers(
   return { items: customers, total, page: returnedPage, pageSize: returnedPageSize }
 }
 
-export async function fetchCustomer(id: string): Promise<Customer> {
-  const { customer } = await request<{ customer: Customer }>(`/api/customers/${id}`)
+export async function fetchCustomer(id: string): Promise<CustomerProfileData> {
+  const { customer } = await request<{ customer: CustomerProfileData }>(`/api/customers/${id}`)
   return customer
 }
 
@@ -60,8 +71,11 @@ export async function createCustomer(input: CreateCustomerInput): Promise<Custom
   return customer
 }
 
-export async function updateCustomer(id: string, input: UpdateCustomerInput): Promise<Customer> {
-  const { customer } = await request<{ customer: Customer }>(`/api/customers/${id}`, {
+export async function updateCustomer(
+  id: string,
+  input: UpdateCustomerInput,
+): Promise<CustomerProfileData> {
+  const { customer } = await request<{ customer: CustomerProfileData }>(`/api/customers/${id}`, {
     method: "PATCH",
     body: JSON.stringify(input),
   })
