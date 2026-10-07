@@ -28,6 +28,7 @@ model User {
   assignedTickets     Ticket[]
   comments            Comment[]
   uploadedAttachments Attachment[]
+  tasksOwned           Task[]               @relation("TaskOwner")
   auditLogs           AuditLog[]
   notifications       Notification[]
 }
@@ -53,6 +54,7 @@ model Customer {
 
   tickets     Ticket[]
   attachments Attachment[]
+  tasks       Task[]
 }
 
 /// Support tickets. `priority` and `status` are Strings, not Prisma enums —
@@ -104,6 +106,7 @@ model Ticket {
 
   comments        Comment[]
   attachments     Attachment[]
+  tasks         Task[]
   notifications   Notification[]
   feedback        Feedback?
 
@@ -180,6 +183,31 @@ model Attachment {
 
   @@index([ticketId, createdAt])
   @@index([customerId, createdAt])
+}
+
+/// Staff follow-up tasks with optional ticket/customer context. Completion
+/// timestamp is retained so completed tasks remain in task history.
+model Task {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  dueAt       DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  ownerId String
+  owner   User   @relation("TaskOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+
+  ticketId String?
+  ticket   Ticket?  @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  @@index([ownerId, completedAt, dueAt])
+  @@index([ticketId])
+  @@index([customerId])
 }
 
 /// Append-only trail of ticket mutations. Written by `logActivity()` in

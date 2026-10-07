@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma"
  */
 export async function resetDb(): Promise<void> {
   await prisma.attachment.deleteMany()
+  await prisma.task.deleteMany()
   await prisma.feedback.deleteMany()
   await prisma.comment.deleteMany()
   await prisma.notification.deleteMany()

@@ -3,6 +3,7 @@ import { withAuth } from "@/lib/api/http"
 import { isStaff } from "@/lib/roles"
 import { isSlaBreached, liveStatusWhere, slaBreachedWhere } from "@/lib/sla"
 import { NOT_DELETED } from "@/lib/ticket-access"
+import { TASK_SELECT } from "@/lib/task-select"
 import { TICKET_LIST_SELECT } from "@/lib/ticket-select"
 import { TICKET_STATUSES, type TicketStatus } from "@/lib/validation/ticket"
 
@@ -28,7 +29,7 @@ export const GET = withAuth({ role: "user" }, async (_request, _ctx, user) => {
   const mine = { ...NOT_DELETED, assignedAgentId: user.id }
   const queue = { ...NOT_DELETED, assignedAgentId: null }
 
-  const [byStatusRows, assignedBreached, queueUnassigned, queueBreached, tickets] =
+  const [byStatusRows, assignedBreached, queueUnassigned, queueBreached, tickets, upcomingTasks, overdueTasks] =
     await Promise.all([
       prisma.ticket.groupBy({
         by: ["status"],
@@ -43,6 +44,22 @@ export const GET = withAuth({ role: "user" }, async (_request, _ctx, user) => {
         orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
         take: DASHBOARD_TICKET_LIMIT,
         select: TICKET_LIST_SELECT,
+      }),
+      prisma.task.findMany({
+        where: {
+          ownerId: user.id,
+          completedAt: null,
+          OR: [{ dueAt: null }, { dueAt: { gt: now } }],
+        },
+        orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
+        take: 5,
+        select: TASK_SELECT,
+      }),
+      prisma.task.findMany({
+        where: { ownerId: user.id, completedAt: null, dueAt: { lte: now } },
+        orderBy: [{ dueAt: "asc" }, { createdAt: "desc" }],
+        take: 5,
+        select: TASK_SELECT,
       }),
     ])
 
@@ -64,5 +81,6 @@ export const GET = withAuth({ role: "user" }, async (_request, _ctx, user) => {
     assigned: { total, byStatus, breached: assignedBreached },
     queue: { unassigned: queueUnassigned, breached: queueBreached },
     tickets: tickets.map((ticket) => ({ ...ticket, slaBreached: isSlaBreached(ticket, now) })),
+    tasks: { upcoming: upcomingTasks, overdue: overdueTasks },
   })
 })

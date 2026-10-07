@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query"
 
 import { AssignedTicketList } from "@/components/agent/dashboard/assigned-ticket-list"
+import { TaskOverview } from "@/components/agent/dashboard/task-overview"
 import { SummaryCards } from "@/components/agent/dashboard/summary-cards"
 import { Spinner } from "@/components/ui/spinner"
 import { dashboardKeys, fetchDashboardSummary } from "@/lib/dashboard"
@@ -33,6 +34,7 @@ export function DashboardOverview() {
       {!isPending && !isError ? (
         <>
           <SummaryCards summary={data} />
+          <TaskOverview upcoming={data.tasks.upcoming} overdue={data.tasks.overdue} />
           <h2 className="text-title">Assigned to me</h2>
           <AssignedTicketList tickets={data.tickets} />
         </>

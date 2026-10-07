@@ -1,6 +1,7 @@
 import { request } from "@/lib/api/client"
 import type { TicketListItem } from "@/lib/tickets"
 import type { TicketStatus } from "@/lib/validation/ticket"
+import type { TaskItem } from "@/lib/tasks"
 
 /**
  * The whole `GET /api/dashboard` payload. Composite rather than a bare array,
@@ -21,6 +22,7 @@ export type DashboardSummary = {
     breached: number
   }
   tickets: TicketListItem[]
+  tasks: { upcoming: TaskItem[]; overdue: TaskItem[] }
 }
 
 export const dashboardKeys = {
