@@ -24,6 +24,9 @@ TanStack Query, and Recharts.
   articles; customers search and read published guides from the portal.
 - **System settings** — admins manage active ticket categories and priority
   response/resolution targets; new ticket deadlines use resolution targets.
+- **Configurable branding** — admins set the organization name, light/dark
+  brand colors, and an optional locally stored logo; branding appears across
+  the staff area, customer portal, authentication pages, and report printing.
 - **Role-based access** — AGENT, ADMIN, and CUSTOMER roles, each guarded at
   the API layer through a single `withAuth` declaration per route.
 - **Pagination & rate limiting** — ticket and customer lists page through
@@ -62,6 +65,7 @@ with `npm test` (Vitest + React Testing Library, no separate setup needed —
 `admin@crm.local` is a strict superset of `agent@crm.local` — same agent
 area and customer/ticket access, plus `/agent/admin/users` (account
 management), `/agent/admin/settings` (ticket categories and SLA targets),
+`/agent/admin/branding` (organization name, colors, and logo),
 `/agent/admin/articles` (knowledge base), and
 `/agent/admin/audit` (the audit trail). `customer@crm.local`
 is seeded with a real linked `Customer` row (`Customer.userId`), the same
